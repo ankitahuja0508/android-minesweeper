@@ -1,8 +1,33 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="MS.AppTheme" parent="android:Theme.Holo.Light">
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="MS">
+    </style>
+
+    <!-- BUTTON -->
+    <style name="MS.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:background">@drawable/selector_button_primary</item>
+        <item name="android:textColor">@color/ms_grey_4</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="MS.Button.Main" parent="MS.Button">
+        <!-- Margins on different sides are separated instead of using layout_margin to facilitate overriding -->
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:layout_marginLeft">12dp</item>
+        <item name="android:layout_marginRight">12dp</item>
+    </style>
+
+    <color name="ms_grey_1">#fff5f5f5</color>
+    <color name="ms_grey_2">#ffe5e5e5</color>
+    <color name="ms_grey_3">#ffd8d8d8</color>
+    <color name="ms_grey_4">#99333333</color>
 </resources>
