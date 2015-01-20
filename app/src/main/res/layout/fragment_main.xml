@@ -14,11 +14,14 @@
         android:contentDescription="@string/default_content_desc"/>
 
     <Button
+        android:id="@+id/main__button_new_game"
         android:text="@string/main__new_game"
         style="@style/MS.Button.Main"/>
 
     <Button
+        android:id="@+id/main__button_continue"
         android:text="@string/main__continue"
-        style="@style/MS.Button.Main"/>
+        style="@style/MS.Button.Main"
+        android:visibility="gone"/>
 
 </LinearLayout>

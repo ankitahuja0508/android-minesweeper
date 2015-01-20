@@ -26,6 +26,14 @@
         <item name="android:layout_marginRight">12dp</item>
     </style>
 
+    <!-- SPINNER -->
+    <style name="MS.Spinner">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+
     <color name="ms_grey_1">#fff5f5f5</color>
     <color name="ms_grey_2">#ffe5e5e5</color>
     <color name="ms_grey_3">#ffd8d8d8</color>

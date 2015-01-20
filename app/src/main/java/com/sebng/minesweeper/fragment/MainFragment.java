@@ -6,8 +6,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
+import com.sebng.minesweeper.dialog.GameSettingsDialogFragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,6 +23,10 @@ import com.sebng.minesweeper.R;
 public class MainFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
+
+    // UI references.
+    private Button mButtonNewGame;
+    private Button mButtonContinue;
 
     public MainFragment() {
         // Required empty public constructor
@@ -41,7 +48,23 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        mButtonNewGame = (Button) rootView.findViewById(R.id.main__button_new_game);
+        mButtonNewGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GameSettingsDialogFragment extendRideDialogFragment = GameSettingsDialogFragment.newInstance(8, 10);//TODO: retrieve previous game settings
+                extendRideDialogFragment.show(getFragmentManager(), GameSettingsDialogFragment.class.toString());
+            }
+        });
+        mButtonContinue = (Button) rootView.findViewById(R.id.main__button_continue);
+        mButtonContinue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "Continue", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return rootView;
     }
 
     @Override
@@ -74,5 +97,4 @@ public class MainFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
     }
-
 }

@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
+import com.sebng.minesweeper.dialog.GameSettingsDialogFragment;
 import com.sebng.minesweeper.fragment.MainFragment;
 
 
 public class MainActivity extends Activity
-        implements MainFragment.OnFragmentInteractionListener {
+        implements MainFragment.OnFragmentInteractionListener,
+        GameSettingsDialogFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,5 +44,11 @@ public class MainActivity extends Activity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onGameSettingsDialogPositiveClick(int dimension, int mines) {
+        //TODO: invoke worker fragment
+        Toast.makeText(this, String.format("Dimension: %d, Mines: %d", dimension, mines), Toast.LENGTH_SHORT).show();
     }
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="ms_default_dimension">8</integer>
+    <integer name="ms_default_mines">10</integer>
+</resources>
