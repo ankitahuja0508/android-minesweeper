@@ -1,39 +1,49 @@
 package com.sebng.minesweeper.activity;
 
 import android.app.ActionBar;
-import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.fragment.GameFragment;
+import com.sebng.minesweeper.worker.GameWorkerFragment;
 
 public class GameActivity extends MSBaseActivity
-        implements GameFragment.OnFragmentInteractionListener {
+        implements GameFragment.OnFragmentInteractionListener,
+        GameWorkerFragment.OnWorkerFragmentCallbacks {
     public static final String EXTRA_DIMENSION = "extra.DIMENSION";
     public static final String EXTRA_MINES = "extra.MINES";
+    protected GameWorkerFragment mWorkerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = getIntent();
+        FragmentManager fm = getFragmentManager();
+        mWorkerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
         int dimension, mines;
-        if (intent != null) {
-            Resources resources = getResources();
-            dimension = intent.getIntExtra(EXTRA_DIMENSION, resources.getInteger(R.integer.ms_default_dimension));
-            mines = intent.getIntExtra(EXTRA_MINES, resources.getInteger(R.integer.ms_default_dimension));
+        if (mWorkerFragment == null) {
+            Intent intent = getIntent();
+            if (intent != null) {
+                Resources resources = getResources();
+                dimension = intent.getIntExtra(EXTRA_DIMENSION, resources.getInteger(R.integer.ms_default_dimension));
+                mines = intent.getIntExtra(EXTRA_MINES, resources.getInteger(R.integer.ms_default_dimension));
+            } else {
+                Resources resources = getResources();
+                dimension = resources.getInteger(R.integer.ms_default_dimension);
+                mines = resources.getInteger(R.integer.ms_default_dimension);
+            }
+
+            mWorkerFragment = GameWorkerFragment.newInstance(dimension, mines);
+            fm.beginTransaction().add(mWorkerFragment, GameWorkerFragment.FRAGMENT_TAG).commit();
         } else {
-            Resources resources = getResources();
-            dimension = resources.getInteger(R.integer.ms_default_dimension);
-            mines = resources.getInteger(R.integer.ms_default_dimension);
+            dimension = mWorkerFragment.getDimension();
+            mines = mWorkerFragment.getMines();
         }
 
         // Display back button in actionbar.
@@ -43,9 +53,13 @@ public class GameActivity extends MSBaseActivity
             actionBar.setTitle(String.format(getString(R.string.game__activity_title), dimension, dimension, mines));
         }
 
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, GameFragment.newInstance(dimension, mines))//TODO-TEMP
+        fm.beginTransaction()
+                .replace(android.R.id.content, GameFragment.newInstance())
                 .commit();
+    }
+
+    public void setUp() {
+
     }
 
     @Override
@@ -82,5 +96,20 @@ public class GameActivity extends MSBaseActivity
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onGenerateGameDataPreExecute() {
+
+    }
+
+    @Override
+    public void onGenerateGameDataCancelled() {
+
+    }
+
+    @Override
+    public void onGenerateGameDataPostExecute(Void result) {
+
     }
 }

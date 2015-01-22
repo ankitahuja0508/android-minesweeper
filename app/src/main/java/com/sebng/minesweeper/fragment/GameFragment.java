@@ -1,6 +1,7 @@
 package com.sebng.minesweeper.fragment;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
+import com.sebng.minesweeper.worker.GameWorkerFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +31,8 @@ import java.util.List;
 public class GameFragment extends Fragment {
     private static final String ARG_DIMENSION = "arg.DIMENSION";
     private static final String ARG_MINES = "arg.MINES";
-    private int mDimension;
-    private int mMines;
     private ArrayAdapter<CellModel> mArrayAdapterForBoardCells;
     private List<CellModel> mGridItemsForBoardCells;
-    // UI references.
-    private GridView mBoard;
 
     private OnFragmentInteractionListener mListener;
 
@@ -43,20 +41,10 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param dimension Dimension of board.
-     * @param mines     Number of mines in the board.
      * @return A new instance of fragment GameFragment.
      */
-    public static GameFragment newInstance(int dimension, int mines) {
-        GameFragment fragment = new GameFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_DIMENSION, dimension);
-        args.putInt(ARG_MINES, mines);
-        fragment.setArguments(args);
-        return fragment;
+    public static GameFragment newInstance() {
+        return new GameFragment();
     }
 
     @Override
@@ -73,8 +61,8 @@ public class GameFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
-        mBoard = (GridView) rootView.findViewById(R.id.gridview);
-        mBoard.setNumColumns(getDimension());
+        GridView gridView = (GridView) rootView.findViewById(R.id.gridview);
+        gridView.setNumColumns(getDimension());
         setArrayAdapterForBoardCells(new ArrayAdapter<CellModel>(getActivity(), 0) {
             @Override
             public boolean areAllItemsEnabled() {
@@ -176,7 +164,7 @@ public class GameFragment extends Fragment {
                 return getGridItemsForBoardCells() == null || getGridItemsForBoardCells().isEmpty();
             }
         });
-        mBoard.setAdapter(getArrayAdapterForBoardCells());
+        gridView.setAdapter(getArrayAdapterForBoardCells());
         return rootView;
     }
 
@@ -215,19 +203,43 @@ public class GameFragment extends Fragment {
     }
 
     public int getDimension() {
-        return mDimension;
+        FragmentManager fm = getFragmentManager();
+        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+        if (workerFragment != null) {
+            return workerFragment.getDimension();
+        } else {
+            return getResources().getInteger(R.integer.ms_default_dimension);
+        }
     }
 
     public void setDimension(int dimension) {
-        mDimension = dimension;
+        FragmentManager fm = getFragmentManager();
+        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+        if (workerFragment != null) {
+            workerFragment.setDimension(dimension);
+        }
     }
 
     public int getMines() {
-        return mMines;
+        FragmentManager fm = getFragmentManager();
+        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+        if (workerFragment != null) {
+            return workerFragment.getMines();
+        } else {
+            return getResources().getInteger(R.integer.ms_default_mines);
+        }
     }
 
     public void setMines(int mines) {
-        mMines = mines;
+        FragmentManager fm = getFragmentManager();
+        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+        if (workerFragment != null) {
+            workerFragment.setMines(mines);
+        }
     }
 
     public ArrayAdapter<CellModel> getArrayAdapterForBoardCells() {
