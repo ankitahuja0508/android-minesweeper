@@ -1,6 +1,7 @@
 package com.sebng.minesweeper.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +49,11 @@ public class MainActivity extends Activity
 
     @Override
     public void onGameSettingsDialogPositiveClick(int dimension, int mines) {
-        //TODO: invoke worker fragment
-        Toast.makeText(this, String.format("Dimension: %d, Mines: %d", dimension, mines), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, GameActivity.class);
+        Bundle extras = new Bundle();
+        extras.putInt(GameActivity.EXTRA_DIMENSION, dimension);
+        extras.putInt(GameActivity.EXTRA_MINES, mines);
+        intent.putExtras(extras);
+        startActivity(intent);
     }
 }

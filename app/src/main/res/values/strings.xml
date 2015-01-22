@@ -11,5 +11,7 @@
     <string name="game_settings__button_cancel">Cancel</string>
     <string name="game_settings__option_dimension" formatted="false">%d x %d</string>
     <string name="game_settings__option_mines">%d mines</string>
+    <string name="game__activity_title" formatted="false">%d x %d , %d bombs</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

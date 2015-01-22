@@ -5,8 +5,7 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="MS">
-    </style>
+    <style name="MS"></style>
 
     <!-- BUTTON -->
     <style name="MS.Button">
@@ -14,7 +13,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:background">@drawable/selector_button_primary</item>
-        <item name="android:textColor">@color/ms_grey_4</item>
+        <item name="android:textColor">@color/ms_text_button_primary</item>
         <item name="android:textSize">18sp</item>
     </style>
 
@@ -34,8 +33,9 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <color name="ms_grey_1">#fff5f5f5</color>
-    <color name="ms_grey_2">#ffe5e5e5</color>
-    <color name="ms_grey_3">#ffd8d8d8</color>
-    <color name="ms_grey_4">#99333333</color>
+    <color name="ms_background_button_primary_solid">#fffbae17</color>
+    <color name="ms_background_button_primary_activated_solid">#ffcc8a15</color>
+    <color name="ms_background_button_primary_stroke">#ffc98b12</color>
+    <color name="ms_text_button_primary">#ffffffff</color>
+    <color name="ms_background_default">#ff2d3238</color>
 </resources>

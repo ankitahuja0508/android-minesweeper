@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
-android:shape="rectangle">
-<solid android:color="@color/ms_grey_1"/>
-<stroke
-    android:width="1dip"
-    android:color="@color/ms_grey_3"/>
+    android:shape="rectangle">
+    <solid android:color="@color/ms_background_button_primary_solid" />
+    <stroke
+        android:width="1dip"
+        android:color="@color/ms_background_button_primary_stroke" />
 </shape>
