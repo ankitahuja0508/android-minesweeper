@@ -12,7 +12,7 @@ import com.sebng.minesweeper.dialog.GameSettingsDialogFragment;
 import com.sebng.minesweeper.fragment.MainFragment;
 
 
-public class MainActivity extends Activity
+public class MainActivity extends MSBaseActivity
         implements MainFragment.OnFragmentInteractionListener,
         GameSettingsDialogFragment.OnFragmentInteractionListener {
 
@@ -24,27 +24,22 @@ public class MainActivity extends Activity
                 .commit();
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_about) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.main__action_help:
+                showTutorial();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

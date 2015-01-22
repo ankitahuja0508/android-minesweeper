@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.fragment.GameFragment;
 
-public class GameActivity extends Activity
+public class GameActivity extends MSBaseActivity
         implements GameFragment.OnFragmentInteractionListener {
     public static final String EXTRA_DIMENSION = "extra.DIMENSION";
     public static final String EXTRA_MINES = "extra.MINES";
@@ -52,7 +52,7 @@ public class GameActivity extends Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_game, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -61,7 +61,23 @@ public class GameActivity extends Activity
             case android.R.id.home:
                 onBackPressed();
                 return true;
-            case R.id.action_about:
+            case R.id.game__action_validate:
+                //TODO: show confirmation prompt
+                return true;
+            case R.id.game__action_reset:
+                //TODO: show confirmation prompt
+                return true;
+            case R.id.game__action_flag_mode:
+                item.setChecked(!item.isChecked());
+                return true;
+            case R.id.game__action_hint:
+                item.setChecked(!item.isChecked());
+                return true;
+            case R.id.game__action_cheat:
+                item.setChecked(!item.isChecked());
+                return true;
+            case R.id.game__action_help:
+                showTutorial();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

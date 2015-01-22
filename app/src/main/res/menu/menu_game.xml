@@ -1,7 +1,38 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.sebng.minesweeper.activity.GameActivity">
-    <item android:id="@+id/action_about" android:title="@string/action_about"
-        android:orderInCategory="100" app:showAsAction="never" />
+    <item
+        android:id="@+id/game__action_validate"
+        android:title="@string/action_validate"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_action_accept"
+        android:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/game__action_reset"
+        android:title="@string/action_reset"
+        android:orderInCategory="200"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/game__action_flag_mode"
+        android:title="@string/action_flag_mode"
+        android:orderInCategory="300"
+        android:showAsAction="never"
+        android:checkable="true" />
+    <item
+        android:id="@+id/game__action_hint"
+        android:title="@string/action_hint"
+        android:orderInCategory="400"
+        android:showAsAction="never"
+        android:checkable="true" />
+    <item
+        android:id="@+id/game__action_cheat"
+        android:title="@string/action_cheat"
+        android:orderInCategory="500"
+        android:showAsAction="never"
+        android:checkable="true" />
+    <item
+        android:id="@+id/game__action_help"
+        android:title="@string/action_help"
+        android:orderInCategory="600"
+        android:showAsAction="never" />
 </menu>
