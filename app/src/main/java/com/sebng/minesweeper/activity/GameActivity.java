@@ -37,16 +37,16 @@ public class GameActivity extends MSBaseActivity
                 dimension = intent.getIntExtra(EXTRA_DIMENSION, resources.getInteger(R.integer.ms_default_dimension));
                 mines = intent.getIntExtra(EXTRA_MINES, resources.getInteger(R.integer.ms_default_dimension));
                 loadGame = intent.getBooleanExtra(EXTRA_LOAD_GAME, false);
+            } else {
+                dimension = resources.getInteger(R.integer.ms_default_dimension);
+                mines = resources.getInteger(R.integer.ms_default_dimension);
             }
 
             mWorkerFragment = GameWorkerFragment.newInstance(dimension, mines, loadGame);
             fm.beginTransaction().add(mWorkerFragment, GameWorkerFragment.FRAGMENT_TAG).commit();
-        }
-        if (dimension == 0) {
-            dimension = resources.getInteger(R.integer.ms_default_dimension);
-        }
-        if (mines == 0) {
-            mines = resources.getInteger(R.integer.ms_default_mines);
+        } else {
+            dimension = mWorkerFragment.getDimension();
+            mines = mWorkerFragment.getMines();
         }
 
         // Display back button in actionbar.
