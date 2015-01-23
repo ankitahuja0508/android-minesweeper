@@ -7,12 +7,10 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.worker.GameWorkerFragment;
@@ -99,7 +97,7 @@ public class GameFragment extends Fragment {
 
                 CellModel item = getItem(position);
                 if (item != null) {
-                    if (item.getIsHidden()) {
+                    if (item.getIsExplored()) {
                         holder.getImageButtonMask().setVisibility(View.VISIBLE);
                         holder.getImageButtonFlagged().setVisibility(item.getIsFlagged() ? View.VISIBLE : View.GONE);
                     } else {
@@ -107,7 +105,7 @@ public class GameFragment extends Fragment {
                         holder.getImageButtonFlagged().setVisibility(View.GONE);
                     }
                     int resId;
-                    if (item.getHasBomb()) {
+                    if (item.getHasMine()) {
                         resId = R.drawable.ic_cell_bomb;
                     } else {
                         switch (item.getAdjacentMines()) {
@@ -197,7 +195,7 @@ public class GameFragment extends Fragment {
         int dimension = getDimension();
         int totalCells = dimension * dimension;
         for (int i = 0; i < totalCells; i++) {
-            gridItems.add(new CellModel(i == 2 ? 0 : i % 8 + 1, i % 3 == 0, i % 5 == 0, i == 5));
+            gridItems.add(new CellModel(i == 2 ? 0 : i % 8 + 1, i % 3 != 0, i % 5 == 0, i == 5));
         }
         setGridItemsForBoardCells(gridItems);
     }
@@ -309,14 +307,14 @@ public class GameFragment extends Fragment {
 
     public class CellModel {
         private Integer mAdjacentMines = null;
-        private Boolean mHasBomb = null;
-        private Boolean mIsHidden = null;
+        private Boolean mHasMine = null;
+        private Boolean mIsExplored = null;
         private Boolean mIsFlagged = null;
 
-        public CellModel(Integer adjacentMines, Boolean hasBomb, Boolean isHidden, Boolean isFlagged) {
+        public CellModel(Integer adjacentMines, Boolean hasBomb, Boolean isExplored, Boolean isFlagged) {
             setAdjacentMines(adjacentMines);
-            setHasBomb(hasBomb);
-            setIsHidden(isHidden);
+            setHasMine(hasBomb);
+            setIsExplored(isExplored);
             setIsFlagged(isFlagged);
         }
 
@@ -328,20 +326,20 @@ public class GameFragment extends Fragment {
             mAdjacentMines = adjacentMines;
         }
 
-        public Boolean getHasBomb() {
-            return mHasBomb;
+        public Boolean getHasMine() {
+            return mHasMine;
         }
 
-        public void setHasBomb(Boolean hasBomb) {
-            mHasBomb = hasBomb;
+        public void setHasMine(Boolean hasMine) {
+            mHasMine = hasMine;
         }
 
-        public Boolean getIsHidden() {
-            return mIsHidden;
+        public Boolean getIsExplored() {
+            return mIsExplored;
         }
 
-        public void setIsHidden(Boolean isHidden) {
-            mIsHidden = isHidden;
+        public void setIsExplored(Boolean isExplored) {
+            mIsExplored = isExplored;
         }
 
         public Boolean getIsFlagged() {
