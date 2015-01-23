@@ -170,6 +170,7 @@ public class GameFragment extends Fragment {
         super.onAttach(activity);
         try {
             mListener = (OnFragmentInteractionListener) activity;
+            mListener.onGameFragmentAttached(this);
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement GameFragment.OnFragmentInteractionListener");
@@ -256,6 +257,7 @@ public class GameFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
+        public void onGameFragmentAttached(GameFragment gameFragment);
     }
 
     private class GridItemViewHolder {

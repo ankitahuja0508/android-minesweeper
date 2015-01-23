@@ -10,6 +10,7 @@ import android.view.MenuItem;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.fragment.GameFragment;
+import com.sebng.minesweeper.model.MSCells;
 import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.worker.GameWorkerFragment;
 
@@ -20,6 +21,8 @@ public class GameActivity extends MSBaseActivity
     public static final String EXTRA_MINES = "extra.MINES";
     public static final String EXTRA_LOAD_GAME = "extra.LOAD_GAME";
     protected GameWorkerFragment mWorkerFragment;
+
+    protected GameFragment mGameFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,10 +106,25 @@ public class GameActivity extends MSBaseActivity
         }
     }
 
+    public GameFragment getGameFragment() {
+        if (mGameFragment == null) {
+            FragmentManager fm = getFragmentManager();
+            GameFragment gameFragment = (GameFragment) fm.findFragmentByTag(GameFragment.FRAGMENT_TAG);
+            if (gameFragment != null) {
+                mGameFragment = gameFragment;
+            }
+        }
+        return mGameFragment;
+    }
+
+    public void setGameFragment(GameFragment gameFragment) {
+        mGameFragment = gameFragment;
+    }
+
     @Override
     public void onGenerateGameDataPreExecute() {
         FragmentManager fm = getFragmentManager();
-        GameFragment gameFragment = (GameFragment) fm.findFragmentByTag(GameFragment.FRAGMENT_TAG);
+        GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onGenerateGameDataPreExecute();
         }
@@ -115,7 +133,7 @@ public class GameActivity extends MSBaseActivity
     @Override
     public void onGenerateGameDataCancelled() {
         FragmentManager fm = getFragmentManager();
-        GameFragment gameFragment = (GameFragment) fm.findFragmentByTag(GameFragment.FRAGMENT_TAG);
+        GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onGenerateGameDataCancelled();
         }
@@ -129,9 +147,29 @@ public class GameActivity extends MSBaseActivity
         }
 
         FragmentManager fm = getFragmentManager();
-        GameFragment gameFragment = (GameFragment) fm.findFragmentByTag(GameFragment.FRAGMENT_TAG);
+        GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onGenerateGameDataPostExecute(result);
         }
+    }
+
+    @Override
+    public void onExploreCellPreExecute() {
+
+    }
+
+    @Override
+    public void onExploreCellCancelled() {
+
+    }
+
+    @Override
+    public void onExploreCellPostExecute(MSCells result) {
+
+    }
+
+    @Override
+    public void onGameFragmentAttached(GameFragment gameFragment) {
+        setGameFragment(gameFragment);
     }
 }
