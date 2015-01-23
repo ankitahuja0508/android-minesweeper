@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.sebng.minesweeper.R;
+import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.worker.GameWorkerFragment;
 
 import java.util.ArrayList;
@@ -27,10 +28,10 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class GameFragment extends Fragment {
-    private static final String ARG_DIMENSION = "arg.DIMENSION";
-    private static final String ARG_MINES = "arg.MINES";
+    public static final String FRAGMENT_TAG = "fragment_tag.GameFragment";
     private ArrayAdapter<CellModel> mArrayAdapterForBoardCells;
     private List<CellModel> mGridItemsForBoardCells;
+    private GridView mGridView;
 
     private OnFragmentInteractionListener mListener;
 
@@ -48,10 +49,6 @@ public class GameFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            setDimension(getArguments().getInt(ARG_DIMENSION));
-            setMines(getArguments().getInt(ARG_MINES));
-        }
     }
 
     @Override
@@ -59,8 +56,8 @@ public class GameFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview);
-        gridView.setNumColumns(getDimension());
+        mGridView = (GridView) rootView.findViewById(R.id.gridview);
+        mGridView.setNumColumns(getDimension());
         setArrayAdapterForBoardCells(new ArrayAdapter<CellModel>(getActivity(), 0) {
             @Override
             public boolean areAllItemsEnabled() {
@@ -162,7 +159,7 @@ public class GameFragment extends Fragment {
                 return getGridItemsForBoardCells() == null || getGridItemsForBoardCells().isEmpty();
             }
         });
-        gridView.setAdapter(getArrayAdapterForBoardCells());
+        mGridView.setAdapter(getArrayAdapterForBoardCells());
         return rootView;
     }
 
@@ -190,54 +187,41 @@ public class GameFragment extends Fragment {
         updateViews();
     }
 
-    public void updateViews() {
-        List<CellModel> gridItems = new ArrayList<CellModel>();
-        int dimension = getDimension();
-        int totalCells = dimension * dimension;
-        for (int i = 0; i < totalCells; i++) {
-            gridItems.add(new CellModel(i == 2 ? 0 : i % 8 + 1, i % 3 != 0, i % 5 == 0, i == 5));
+    public void updateViews(MSGame game) {
+        if (game == null) {
+            FragmentManager fm = getFragmentManager();
+            GameWorkerFragment gameWorkerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+            if (gameWorkerFragment != null) {
+                game = gameWorkerFragment.getGame();
+            }
         }
-        setGridItemsForBoardCells(gridItems);
+        if (game != null) {
+            List<CellModel> gridItems = new ArrayList<CellModel>();
+            int dimension = getDimension();
+            int totalCells = dimension * dimension;
+            for (int i = 0; i < totalCells; i++) {
+                gridItems.add(new CellModel(i == 2 ? 0 : i % 8 + 1, i % 3 != 0, i % 5 == 0, i == 5));
+            }
+            setGridItemsForBoardCells(gridItems);
+            mGridView.setNumColumns(dimension);
+            getArrayAdapterForBoardCells().notifyDataSetChanged();
+        }
+    }
+
+    public void updateViews() {
+        updateViews(null);
     }
 
     public int getDimension() {
         FragmentManager fm = getFragmentManager();
         GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-
-        if (workerFragment != null) {
-            return workerFragment.getDimension();
-        } else {
-            return getResources().getInteger(R.integer.ms_default_dimension);
-        }
-    }
-
-    public void setDimension(int dimension) {
-        FragmentManager fm = getFragmentManager();
-        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-
-        if (workerFragment != null) {
-            workerFragment.setDimension(dimension);
-        }
+        return workerFragment != null ? workerFragment.getDimension() : 0;
     }
 
     public int getMines() {
         FragmentManager fm = getFragmentManager();
         GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-
-        if (workerFragment != null) {
-            return workerFragment.getMines();
-        } else {
-            return getResources().getInteger(R.integer.ms_default_mines);
-        }
-    }
-
-    public void setMines(int mines) {
-        FragmentManager fm = getFragmentManager();
-        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-
-        if (workerFragment != null) {
-            workerFragment.setMines(mines);
-        }
+        return workerFragment != null ? workerFragment.getMines() : 0;
     }
 
     public ArrayAdapter<CellModel> getArrayAdapterForBoardCells() {
@@ -254,6 +238,16 @@ public class GameFragment extends Fragment {
 
     public void setGridItemsForBoardCells(List<CellModel> listItemsForBoardCells) {
         mGridItemsForBoardCells = listItemsForBoardCells;
+    }
+
+    public void onGenerateGameDataPreExecute() {
+    }
+
+    public void onGenerateGameDataCancelled() {
+    }
+
+    public void onGenerateGameDataPostExecute(MSGame result) {
+        updateViews(result);
     }
 
     /**

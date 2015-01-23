@@ -2,32 +2,36 @@ package com.sebng.minesweeper.worker;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.sebng.minesweeper.R;
+import com.sebng.minesweeper.helper.MSDatabaseHelper;
+import com.sebng.minesweeper.model.MSGame;
+
+import java.util.ArrayList;
 
 public class GameWorkerFragment extends Fragment {
     public static final String FRAGMENT_TAG = "fragment_tag.GameWorkerFragment";
     protected static final String ARG_DIMENSION = "arg.DIMENSION";
     protected static final String ARG_MINES = "arg.MINES";
-    protected OnWorkerFragmentCallbacks mCallbacks;
-    protected MSGenerateGameDataTask mGenerateGameDataTask;
-    protected int mDimension;
-    protected int mMines;
+    protected static final String ARG_LOAD_GAME = "arg.LOAD_GAME";
+    protected OnWorkerFragmentCallbacks mCallbacks = null;
+    protected MSGenerateGameDataTask mGenerateGameDataTask = null;
 
     /**
      * Returns a new instance of this fragment.
      *
-     * @param dimension Dimension of board.
-     * @param mines     Number of mines in the board.
      * @return A new instance of fragment GameWorkerFragment.
      */
-    public static GameWorkerFragment newInstance(int dimension, int mines) {
+    public static GameWorkerFragment newInstance(int dimension, int mines, boolean loadGame) {
         GameWorkerFragment fragment = new GameWorkerFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_DIMENSION, dimension);
         args.putInt(ARG_MINES, mines);
+        args.putBoolean(ARG_LOAD_GAME, loadGame);
         fragment.setArguments(args);
         return fragment;
     }
@@ -40,9 +44,31 @@ public class GameWorkerFragment extends Fragment {
         setRetainInstance(true);
 
         if (getArguments() != null) {
-            setDimension(getArguments().getInt(ARG_DIMENSION, getResources().getInteger(R.integer.ms_default_dimension)));
-            setMines(getArguments().getInt(ARG_MINES, getResources().getInteger(R.integer.ms_default_mines)));
+            boolean loadGame = getArguments().getBoolean(ARG_LOAD_GAME, false);
+            if (!loadGame) {
+                int dimension = getArguments().getInt(ARG_DIMENSION, getResources().getInteger(R.integer.ms_default_dimension));
+                int mines = getArguments().getInt(ARG_MINES, getResources().getInteger(R.integer.ms_default_mines));
+                createNewGameAsync(dimension, mines);
+            }
         }
+    }
+
+    public MSGame createNewGame(int dimension, int mines) {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        //TODO-TEMP: delete all cells
+        return databaseHelper.createNewGame(dimension, mines);
+    }
+
+    public void createNewGameAsync(int dimension, int mines) {
+        if (mGenerateGameDataTask != null)
+            return;
+
+        mGenerateGameDataTask = new MSGenerateGameDataTask();
+        Object[] params = {
+                dimension,
+                mines
+        };
+        mGenerateGameDataTask.execute(params);
     }
 
     @Override
@@ -71,44 +97,49 @@ public class GameWorkerFragment extends Fragment {
         mCallbacks = null;
     }
 
-    public int getDimension() {
-        return mDimension;
+    public MSGame getGame() {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        return databaseHelper.loadGame();
     }
 
-    public void setDimension(int dimension) {
-        mDimension = dimension;
+    public int getDimension() {
+        MSGame game = getGame();
+        return game != null ? game.getDimension() : 0;
     }
 
     public int getMines() {
-        return mMines;
+        MSGame game = getGame();
+        return game != null ? game.getMines() : 0;
     }
-
-    public void setMines(int mines) {
-        mMines = mines;
-    }
-
 
     public static interface OnWorkerFragmentCallbacks {
         void onGenerateGameDataPreExecute();
 
         void onGenerateGameDataCancelled();
 
-        void onGenerateGameDataPostExecute(Void result);
+        void onGenerateGameDataPostExecute(MSGame result);
     }
 
-    public class MSGenerateGameDataTask extends AsyncTask<Void, Void, Void> {
+    public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGame> {
         @Override
         public void onPreExecute() {
             if (mCallbacks != null) mCallbacks.onGenerateGameDataPreExecute();
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected MSGame doInBackground(Object... params) {
+            if (params != null && params.length == 2) {
+                Integer dimension = (Integer) params[0];
+                Integer mines = (Integer) params[1];
+                if (dimension != 0 && mines != 0) {
+                    return createNewGame(dimension, mines);
+                }
+            }
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(MSGame result) {
             if (mCallbacks != null) mCallbacks.onGenerateGameDataPostExecute(result);
             mGenerateGameDataTask = null;
         }

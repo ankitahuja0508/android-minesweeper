@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="ms_log_tag">MineSweeper</string>
     <integer name="ms_default_dimension">8</integer>
     <integer name="ms_default_mines">10</integer>
 </resources>

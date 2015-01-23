@@ -48,7 +48,9 @@ public class MainActivity extends MSBaseActivity
         Bundle extras = new Bundle();
         extras.putInt(GameActivity.EXTRA_DIMENSION, dimension);
         extras.putInt(GameActivity.EXTRA_MINES, mines);
+        extras.putBoolean(GameActivity.EXTRA_LOAD_GAME, false);
         intent.putExtras(extras);
+
         startActivity(intent);
     }
 }

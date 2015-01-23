@@ -3,6 +3,8 @@ package com.sebng.minesweeper.model;
 import java.util.HashMap;
 
 public class MSGame extends MSObject {
+    public final static String DB_TABLE_NAME = "games";
+    public final static int DEFAULT_ID_VALUE = 1;
     public final static String PARAM_KEY_DIMENSION = "dimension";
     public final static String PARAM_KEY_MINES = "mines";
     public final static String PARAM_KEY_HAS_STARTED = "has_started";

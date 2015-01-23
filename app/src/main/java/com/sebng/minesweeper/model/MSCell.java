@@ -3,6 +3,7 @@ package com.sebng.minesweeper.model;
 import java.util.HashMap;
 
 public class MSCell extends MSObject {
+    public final static String DB_TABLE_NAME = "cells";
     public final static String PARAM_KEY_ROW_INDEX = "row_index"; // zero-based
     public final static String PARAM_KEY_COL_INDEX = "col_index"; // zero-based
     public final static String PARAM_KEY_LINEAR_INDEX = "linear_index"; // zero-based index if all rows were to be concatenated
