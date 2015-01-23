@@ -10,6 +10,8 @@ import android.widget.Toast;
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.dialog.GameSettingsDialogFragment;
 import com.sebng.minesweeper.fragment.MainFragment;
+import com.sebng.minesweeper.helper.MSDatabaseHelper;
+import com.sebng.minesweeper.model.MSGame;
 
 
 public class MainActivity extends MSBaseActivity
@@ -49,6 +51,26 @@ public class MainActivity extends MSBaseActivity
         extras.putInt(GameActivity.EXTRA_DIMENSION, dimension);
         extras.putInt(GameActivity.EXTRA_MINES, mines);
         extras.putBoolean(GameActivity.EXTRA_LOAD_GAME, false);
+        intent.putExtras(extras);
+
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRequestToContinueGame() {
+        Intent intent = new Intent(this, GameActivity.class);
+        Bundle extras = new Bundle();
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(this);
+        MSGame game = databaseHelper.loadGame();
+        if (game != null) {
+            extras.putInt(GameActivity.EXTRA_DIMENSION, game.getDimension());
+            extras.putInt(GameActivity.EXTRA_MINES, game.getMines());
+            extras.putBoolean(GameActivity.EXTRA_LOAD_GAME, true);
+        } else {
+            extras.putInt(GameActivity.EXTRA_DIMENSION, getResources().getInteger(R.integer.ms_default_dimension));
+            extras.putInt(GameActivity.EXTRA_MINES, getResources().getInteger(R.integer.ms_default_mines));
+            extras.putBoolean(GameActivity.EXTRA_LOAD_GAME, false);
+        }
         intent.putExtras(extras);
 
         startActivity(intent);

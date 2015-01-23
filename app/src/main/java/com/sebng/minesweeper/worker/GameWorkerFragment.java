@@ -9,9 +9,11 @@ import android.os.Bundle;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.helper.MSDatabaseHelper;
+import com.sebng.minesweeper.model.MSCell;
 import com.sebng.minesweeper.model.MSGame;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameWorkerFragment extends Fragment {
     public static final String FRAGMENT_TAG = "fragment_tag.GameWorkerFragment";
@@ -55,7 +57,7 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGame createNewGame(int dimension, int mines) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        //TODO-TEMP: delete all cells
+        databaseHelper.deleteAllCells();
         return databaseHelper.createNewGame(dimension, mines);
     }
 

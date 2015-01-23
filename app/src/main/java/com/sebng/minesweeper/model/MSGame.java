@@ -1,6 +1,7 @@
 package com.sebng.minesweeper.model;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class MSGame extends MSObject {
     public final static String DB_TABLE_NAME = "games";

@@ -12,6 +12,7 @@ import com.sebng.minesweeper.model.MSCell;
 import com.sebng.minesweeper.model.MSGame;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MSDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mine_sweeper";
@@ -33,7 +34,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(String.format("create table %s (id integer primary key autoincrement" +
+        db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
                         ", %s real" +
                         ", %s real" +
                         ", %s real" +
@@ -41,14 +42,14 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         ", %s real" +
                         ");",
                 MSGame.DB_TABLE_NAME,
+                MSGame.PARAM_KEY_ID,
                 MSGame.PARAM_KEY_DIMENSION,
                 MSGame.PARAM_KEY_MINES,
                 MSGame.PARAM_KEY_HAS_STARTED,
                 MSGame.PARAM_KEY_HAS_ENDED,
                 MSGame.PARAM_KEY_HAS_WON));
 
-        db.execSQL(String.format("create table %s (id integer primary key autoincrement" +
-                        ", %s real" +
+        db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
                         ", %s real" +
                         ", %s real" +
                         ", %s real" +
@@ -57,9 +58,9 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         ", %s real" +
                         ");",
                 MSCell.DB_TABLE_NAME,
+                MSGame.PARAM_KEY_ID,
                 MSCell.PARAM_KEY_ROW_INDEX,
                 MSCell.PARAM_KEY_COL_INDEX,
-                MSCell.PARAM_KEY_LINEAR_INDEX,
                 MSCell.PARAM_KEY_IS_EXPLORED,
                 MSCell.PARAM_KEY_IS_FLAGGED,
                 MSCell.PARAM_KEY_HAS_MINE,
@@ -104,13 +105,14 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
     public MSGame loadGame() {
         ArrayList<MSGame> games = new ArrayList<MSGame>();
         Cursor result = getReadableDatabase()
-                .rawQuery(String.format("select id" +
+                .rawQuery(String.format("select %s" +
                                 ",  %s" +
                                 ", %s" +
                                 ", %s" +
                                 ", %s" +
                                 ", %s" +
                                 " from %s",
+                        MSGame.PARAM_KEY_ID,
                         MSGame.PARAM_KEY_DIMENSION,
                         MSGame.PARAM_KEY_MINES,
                         MSGame.PARAM_KEY_HAS_STARTED,
@@ -129,5 +131,72 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         }
         result.close();
         return games.isEmpty() ? null : games.get(0);
+    }
+
+    public void deleteAllCells() {
+        getWritableDatabase().delete(MSCell.DB_TABLE_NAME, null, null);
+    }
+
+    public List<MSCell> resetCells(int dimension, int mines, int row_index_first_move, int col_index_first_move) {
+        deleteAllCells();
+        List<MSCell> cells = generateCells(dimension, mines);
+        for (MSCell cell : cells) {
+            ContentValues cv = new ContentValues();
+            cv.put(MSCell.PARAM_KEY_ID, cell.getId());
+            cv.put(MSCell.PARAM_KEY_ROW_INDEX, cell.getRowIndex());
+            cv.put(MSCell.PARAM_KEY_COL_INDEX, cell.getColIndex());
+            cv.put(MSCell.PARAM_KEY_IS_EXPLORED, cell.getIsExplored());
+            cv.put(MSCell.PARAM_KEY_IS_FLAGGED, cell.getIsFlagged());
+            cv.put(MSCell.PARAM_KEY_HAS_MINE, cell.getHasMine());
+            cv.put(MSCell.PARAM_KEY_ADJACENT_MINES, cell.getAdjacentMines());
+            getWritableDatabase().insert(MSCell.DB_TABLE_NAME, MSCell.PARAM_KEY_ID, cv);
+            cells.add(cell);
+        }
+        return cells;
+    }
+
+    public List<MSCell> generateCells(int dimension, int mines) {
+        ArrayList<MSCell> cells = new ArrayList<MSCell>();
+        for (int i = 0, k = 1; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++, k++) {
+                MSCell cell = new MSCell(k, i, j, false, false, false, 0);
+                cells.add(cell);
+            }
+        }
+        return cells;
+    }
+
+    public List<MSCell> loadCells() {
+        ArrayList<MSCell> cells = new ArrayList<MSCell>();
+        Cursor result = getReadableDatabase()
+                .rawQuery(String.format("select %s" +
+                                ",  %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                " from %s",
+                        MSCell.PARAM_KEY_ID,
+                        MSCell.PARAM_KEY_ROW_INDEX,
+                        MSCell.PARAM_KEY_COL_INDEX,
+                        MSCell.PARAM_KEY_IS_EXPLORED,
+                        MSCell.PARAM_KEY_IS_FLAGGED,
+                        MSCell.PARAM_KEY_HAS_MINE,
+                        MSCell.PARAM_KEY_ADJACENT_MINES,
+                        MSCell.DB_TABLE_NAME), null);
+        while (result.moveToNext()) {
+            cells.add(new MSCell(
+                    result.getInt(0),
+                    result.getInt(1),
+                    result.getInt(2),
+                    result.getInt(3) == 1,
+                    result.getInt(4) == 1,
+                    result.getInt(5) == 1,
+                    result.getInt(6)
+            ));
+        }
+        result.close();
+        return cells;
     }
 }

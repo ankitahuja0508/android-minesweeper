@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.dialog.GameSettingsDialogFragment;
+import com.sebng.minesweeper.helper.MSDatabaseHelper;
+import com.sebng.minesweeper.model.MSGame;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -53,7 +55,17 @@ public class MainFragment extends Fragment {
         mButtonNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GameSettingsDialogFragment extendRideDialogFragment = GameSettingsDialogFragment.newInstance(8, 10);//TODO: retrieve previous game settings
+                MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+                MSGame game = databaseHelper.loadGame();
+                int dimension, mines;
+                if (game != null) {
+                    dimension = game.getDimension();
+                    mines = game.getMines();
+                } else {
+                    dimension = getResources().getInteger(R.integer.ms_default_dimension);
+                    mines = getResources().getInteger(R.integer.ms_default_mines);
+                }
+                GameSettingsDialogFragment extendRideDialogFragment = GameSettingsDialogFragment.newInstance(dimension, mines);
                 extendRideDialogFragment.show(getFragmentManager(), GameSettingsDialogFragment.class.toString());
             }
         });
@@ -61,7 +73,9 @@ public class MainFragment extends Fragment {
         mButtonContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Continue", Toast.LENGTH_SHORT).show();
+                if (mListener != null) {
+                    mListener.onRequestToContinueGame();
+                }
             }
         });
         return rootView;
@@ -85,6 +99,19 @@ public class MainFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        updateViews();
+    }
+
+    public void updateViews() {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        MSGame game = databaseHelper.loadGame();
+        mButtonContinue.setVisibility(game != null && !game.getHasEnded() ? View.VISIBLE : View.GONE);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -96,5 +123,6 @@ public class MainFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
+        public void onRequestToContinueGame();
     }
 }

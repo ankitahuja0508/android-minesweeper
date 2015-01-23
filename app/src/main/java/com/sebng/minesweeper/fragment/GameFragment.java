@@ -13,6 +13,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.sebng.minesweeper.R;
+import com.sebng.minesweeper.helper.MSDatabaseHelper;
+import com.sebng.minesweeper.model.MSCell;
 import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.worker.GameWorkerFragment;
 
@@ -29,8 +31,8 @@ import java.util.List;
  */
 public class GameFragment extends Fragment {
     public static final String FRAGMENT_TAG = "fragment_tag.GameFragment";
-    private ArrayAdapter<CellModel> mArrayAdapterForBoardCells;
-    private List<CellModel> mGridItemsForBoardCells;
+    private ArrayAdapter<MSCell> mArrayAdapterForBoardCells;
+    private List<MSCell> mGridItemsForBoardCells;
     private GridView mGridView;
 
     private OnFragmentInteractionListener mListener;
@@ -58,7 +60,7 @@ public class GameFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview);
         mGridView.setNumColumns(getDimension());
-        setArrayAdapterForBoardCells(new ArrayAdapter<CellModel>(getActivity(), 0) {
+        setArrayAdapterForBoardCells(new ArrayAdapter<MSCell>(getActivity(), 0) {
             @Override
             public boolean areAllItemsEnabled() {
                 return false;
@@ -75,7 +77,7 @@ public class GameFragment extends Fragment {
             }
 
             @Override
-            public CellModel getItem(int position) {
+            public MSCell getItem(int position) {
                 return getGridItemsForBoardCells() != null ? getGridItemsForBoardCells().get(position) : null;
             }
 
@@ -92,14 +94,14 @@ public class GameFragment extends Fragment {
                     convertView.setTag(holder);
                 }
 
-                CellModel item = getItem(position);
+                MSCell item = getItem(position);
                 if (item != null) {
                     if (item.getIsExplored()) {
-                        holder.getImageButtonMask().setVisibility(View.VISIBLE);
-                        holder.getImageButtonFlagged().setVisibility(item.getIsFlagged() ? View.VISIBLE : View.GONE);
-                    } else {
                         holder.getImageButtonMask().setVisibility(View.GONE);
                         holder.getImageButtonFlagged().setVisibility(View.GONE);
+                    } else {
+                        holder.getImageButtonMask().setVisibility(View.VISIBLE);
+                        holder.getImageButtonFlagged().setVisibility(item.getIsFlagged() ? View.VISIBLE : View.GONE);
                     }
                     int resId;
                     if (item.getHasMine()) {
@@ -188,21 +190,14 @@ public class GameFragment extends Fragment {
     }
 
     public void updateViews(MSGame game) {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         if (game == null) {
-            FragmentManager fm = getFragmentManager();
-            GameWorkerFragment gameWorkerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-            if (gameWorkerFragment != null) {
-                game = gameWorkerFragment.getGame();
-            }
+            game = databaseHelper.loadGame();
         }
         if (game != null) {
-            List<CellModel> gridItems = new ArrayList<CellModel>();
-            int dimension = getDimension();
-            int totalCells = dimension * dimension;
-            for (int i = 0; i < totalCells; i++) {
-                gridItems.add(new CellModel(i == 2 ? 0 : i % 8 + 1, i % 3 != 0, i % 5 == 0, i == 5));
-            }
-            setGridItemsForBoardCells(gridItems);
+            int dimension = game.getDimension();
+            List<MSCell> cells = game.getHasStarted() ? databaseHelper.loadCells() : databaseHelper.generateCells(dimension, dimension);
+            setGridItemsForBoardCells(cells);
             mGridView.setNumColumns(dimension);
             getArrayAdapterForBoardCells().notifyDataSetChanged();
         }
@@ -224,19 +219,19 @@ public class GameFragment extends Fragment {
         return workerFragment != null ? workerFragment.getMines() : 0;
     }
 
-    public ArrayAdapter<CellModel> getArrayAdapterForBoardCells() {
+    public ArrayAdapter<MSCell> getArrayAdapterForBoardCells() {
         return mArrayAdapterForBoardCells;
     }
 
-    public void setArrayAdapterForBoardCells(ArrayAdapter<CellModel> arrayAdapterForBoardCells) {
+    public void setArrayAdapterForBoardCells(ArrayAdapter<MSCell> arrayAdapterForBoardCells) {
         mArrayAdapterForBoardCells = arrayAdapterForBoardCells;
     }
 
-    public List<CellModel> getGridItemsForBoardCells() {
+    public List<MSCell> getGridItemsForBoardCells() {
         return mGridItemsForBoardCells;
     }
 
-    public void setGridItemsForBoardCells(List<CellModel> listItemsForBoardCells) {
+    public void setGridItemsForBoardCells(List<MSCell> listItemsForBoardCells) {
         mGridItemsForBoardCells = listItemsForBoardCells;
     }
 
@@ -296,52 +291,6 @@ public class GameFragment extends Fragment {
 
         public void setImageButtonFlagged(ImageButton imageButtonFlagged) {
             mImageButtonFlagged = imageButtonFlagged;
-        }
-    }
-
-    public class CellModel {
-        private Integer mAdjacentMines = null;
-        private Boolean mHasMine = null;
-        private Boolean mIsExplored = null;
-        private Boolean mIsFlagged = null;
-
-        public CellModel(Integer adjacentMines, Boolean hasBomb, Boolean isExplored, Boolean isFlagged) {
-            setAdjacentMines(adjacentMines);
-            setHasMine(hasBomb);
-            setIsExplored(isExplored);
-            setIsFlagged(isFlagged);
-        }
-
-        public Integer getAdjacentMines() {
-            return mAdjacentMines;
-        }
-
-        public void setAdjacentMines(Integer adjacentMines) {
-            mAdjacentMines = adjacentMines;
-        }
-
-        public Boolean getHasMine() {
-            return mHasMine;
-        }
-
-        public void setHasMine(Boolean hasMine) {
-            mHasMine = hasMine;
-        }
-
-        public Boolean getIsExplored() {
-            return mIsExplored;
-        }
-
-        public void setIsExplored(Boolean isExplored) {
-            mIsExplored = isExplored;
-        }
-
-        public Boolean getIsFlagged() {
-            return mIsFlagged;
-        }
-
-        public void setIsFlagged(Boolean isFlagged) {
-            mIsFlagged = isFlagged;
         }
     }
 }
