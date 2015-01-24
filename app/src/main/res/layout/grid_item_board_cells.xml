@@ -2,13 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+
     <ImageView
         android:id="@+id/game__imageview_underlying"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_cell_blank"
         android:contentDescription="@string/default_content_desc"
-        android:adjustViewBounds="true"/>
+        android:adjustViewBounds="true" />
+
     <ImageButton
         android:id="@+id/game__imagebutton_mask"
         android:layout_width="match_parent"
@@ -17,7 +19,8 @@
         android:scaleType="fitXY"
         android:padding="0dip"
         android:contentDescription="@string/default_content_desc"
-        android:adjustViewBounds="true"/>
+        android:adjustViewBounds="true" />
+
     <ImageButton
         android:id="@+id/game__imagebutton_flagged"
         android:layout_width="match_parent"
@@ -26,5 +29,5 @@
         android:scaleType="fitXY"
         android:padding="0dip"
         android:contentDescription="@string/default_content_desc"
-        android:adjustViewBounds="true"/>
+        android:adjustViewBounds="true" />
 </RelativeLayout>

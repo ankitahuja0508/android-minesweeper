@@ -18,5 +18,7 @@
     <string name="game_settings__option_dimension" formatted="false">%d x %d</string>
     <string name="game_settings__option_mines">%d mines</string>
     <string name="game__activity_title" formatted="false">%d x %d , %d bombs</string>
+    <string name="game__ended_and_won">The game has ended. You have won!</string>
+    <string name="game__ended_and_lost">The game has ended. You have lost.</string>
 
 </resources>

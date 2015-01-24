@@ -104,6 +104,11 @@ public class GameFragment extends Fragment {
                     } else {
                         holder.getImageButtonMask().setVisibility(View.VISIBLE);
                         holder.getImageButtonFlagged().setVisibility(item.getIsFlagged() ? View.VISIBLE : View.GONE);
+
+                        MSGame game = getGame();
+                        boolean shouldReveal = game != null && game.getHasEnded() && item.getHasMine();
+                        float alpha = shouldReveal ? 0.7f : 1;
+                        holder.getImageButtonMask().setAlpha(alpha);
                     }
                     int resId;
                     if (item.getHasMine()) {
@@ -202,23 +207,25 @@ public class GameFragment extends Fragment {
             int dimension = game.getDimension();
             List<MSCell> cells = gameState.getCells();
             if (cells == null || cells.isEmpty()) {
-                cells = game.getHasStarted() ? databaseHelper.loadCells() : databaseHelper.generateCells(dimension, dimension);//TODO-TEMP
+                cells = game.getHasStarted() ? databaseHelper.loadCells() : databaseHelper.generateCells(dimension, dimension);
             }
             setCells(cells);
             mGridView.setNumColumns(dimension);
             getArrayAdapterForBoardCells().notifyDataSetChanged();
             if (game.getHasEnded()) {
-                if (game.getHasWon()) {
-                    Toast.makeText(getActivity(), "Won!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getActivity(), "Lose...", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     public void updateViews() {
         updateViews(null);
+    }
+
+    public MSGame getGame() {
+        FragmentManager fm = getFragmentManager();
+        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+        return workerFragment != null ? workerFragment.getGame() : null;
     }
 
     public int getDimension() {
@@ -260,14 +267,22 @@ public class GameFragment extends Fragment {
     }
 
     public void onExploreCellPreExecute() {
-
     }
 
     public void onExploreCellCancelled() {
-
     }
 
     public void onExploreCellPostExecute(MSGameState result) {
+        updateViews(result);
+    }
+
+    public void onValidateGamePreExecute() {
+    }
+
+    public void onValidateGameCancelled() {
+    }
+
+    public void onValidateGamePostExecute(MSGameState result) {
         updateViews(result);
     }
 
@@ -309,7 +324,12 @@ public class GameFragment extends Fragment {
                                 GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
 
                                 if (workerFragment != null) {
-                                    workerFragment.exploreCellAsync(cell.getRowIndex(), cell.getColIndex());
+                                    MSGame game = workerFragment.getGame();
+                                    if (game.getHasEnded()) {
+                                        Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        workerFragment.exploreCellAsync(cell.getRowIndex(), cell.getColIndex());
+                                    }
                                 }
                             }
                         }

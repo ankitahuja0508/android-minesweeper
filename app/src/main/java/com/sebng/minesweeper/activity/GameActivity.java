@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.fragment.GameFragment;
@@ -85,6 +86,17 @@ public class GameActivity extends MSBaseActivity
                 return true;
             case R.id.game__action_validate:
                 //TODO: show confirmation prompt
+                FragmentManager fm = getFragmentManager();
+                GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+                if (workerFragment != null) {
+                    MSGame game = workerFragment.getGame();
+                    if (game.getHasEnded()) {
+                        Toast.makeText(this, getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+                    } else {
+                        workerFragment.validateGameAsync();
+                    }
+                }
                 return true;
             case R.id.game__action_reset:
                 //TODO: show confirmation prompt
@@ -171,6 +183,30 @@ public class GameActivity extends MSBaseActivity
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onExploreCellPostExecute(result);
+        }
+    }
+
+    @Override
+    public void onValidateGamePreExecute() {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onValidateGamePreExecute();
+        }
+    }
+
+    @Override
+    public void onValidateGameCancelled() {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onValidateGameCancelled();
+        }
+    }
+
+    @Override
+    public void onValidateGamePostExecute(MSGameState result) {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onValidateGamePostExecute(result);
         }
     }
 

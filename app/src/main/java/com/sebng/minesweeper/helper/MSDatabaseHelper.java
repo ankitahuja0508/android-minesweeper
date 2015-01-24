@@ -150,6 +150,15 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return games.isEmpty() ? null : games.get(0);
     }
 
+    public MSGameState validateGame(MSGameState gameState) {
+        MSGame game = gameState.getGame();
+        game.setHasEnded(true);
+        int x = getNumberOfUnexploredCells();
+        game.setHasWon(getNumberOfUnexploredCells() == game.getMines());
+        updateGame(game);
+        return gameState;
+    }
+
     public void deleteAllCells() {
         getWritableDatabase().delete(MSCell.DB_TABLE_NAME, null, null);
     }
@@ -308,6 +317,19 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         }
         result.close();
         return cells;
+    }
+
+    public int getNumberOfUnexploredCells() {
+        int num = 0;
+        Cursor result = getReadableDatabase()
+                .rawQuery(String.format("select 1 from %s where %s = 0",
+                        MSCell.DB_TABLE_NAME,
+                        MSCell.PARAM_KEY_IS_EXPLORED), null);
+        while (result.moveToNext()) {
+            num++;
+        }
+        result.close();
+        return num;
     }
 
     public void insertOrUpdateCell(MSCell cell, boolean bUpdate) {

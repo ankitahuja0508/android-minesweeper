@@ -21,6 +21,7 @@ public class GameWorkerFragment extends Fragment {
     protected OnWorkerFragmentCallbacks mCallbacks = null;
     protected MSGenerateGameDataTask mGenerateGameDataTask = null;
     protected MSExploreCellTask mExploreCellTask = null;
+    protected MSValidateGameTask mValidateGameTask = null;
 
     /**
      * Returns a new instance of this fragment.
@@ -94,6 +95,25 @@ public class GameWorkerFragment extends Fragment {
         mExploreCellTask.execute(params);
     }
 
+    public MSGameState validateGame() {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        MSGame game = databaseHelper.loadGame();
+        MSGameState gameState = new MSGameState(game, databaseHelper.loadCells());
+        if (game.getHasEnded()) {
+            return gameState;
+        } else {
+            return databaseHelper.validateGame(gameState);
+        }
+    }
+
+    public void validateGameAsync() {
+        if (mValidateGameTask != null)
+            return;
+
+        mValidateGameTask = new MSValidateGameTask();
+        mValidateGameTask.execute();
+    }
+
     @Override
     public void onDestroy() {
         cancelAsyncTasks();
@@ -103,12 +123,28 @@ public class GameWorkerFragment extends Fragment {
 
     public void cancelAsyncTasks() {
         cancelGenerateGameData();
+        cancelExploreCell();
+        cancelValidateGame();
     }
 
     public void cancelGenerateGameData() {
         if (mGenerateGameDataTask != null &&
                 !mGenerateGameDataTask.isCancelled()) {
             mGenerateGameDataTask.cancel(true);
+        }
+    }
+
+    public void cancelExploreCell() {
+        if (mExploreCellTask != null &&
+                !mExploreCellTask.isCancelled()) {
+            mExploreCellTask.cancel(true);
+        }
+    }
+
+    public void cancelValidateGame() {
+        if (mValidateGameTask != null &&
+                !mValidateGameTask.isCancelled()) {
+            mValidateGameTask.cancel(true);
         }
     }
 
@@ -155,6 +191,12 @@ public class GameWorkerFragment extends Fragment {
         void onExploreCellCancelled();
 
         void onExploreCellPostExecute(MSGameState result);
+
+        void onValidateGamePreExecute();
+
+        void onValidateGameCancelled();
+
+        void onValidateGamePostExecute(MSGameState result);
     }
 
     public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGame> {
@@ -216,6 +258,30 @@ public class GameWorkerFragment extends Fragment {
         protected void onCancelled() {
             if (mCallbacks != null) mCallbacks.onExploreCellCancelled();
             mExploreCellTask = null;
+        }
+    }
+
+    public class MSValidateGameTask extends AsyncTask<Void, Void, MSGameState> {
+        @Override
+        public void onPreExecute() {
+            if (mCallbacks != null) mCallbacks.onValidateGamePreExecute();
+        }
+
+        @Override
+        protected MSGameState doInBackground(Void... params) {
+            return validateGame();
+        }
+
+        @Override
+        protected void onPostExecute(MSGameState result) {
+            if (mCallbacks != null) mCallbacks.onValidateGamePostExecute(result);
+            mValidateGameTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mCallbacks != null) mCallbacks.onValidateGameCancelled();
+            mValidateGameTask = null;
         }
     }
 }
