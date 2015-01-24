@@ -27,7 +27,6 @@ public class MainFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     // UI references.
-    private Button mButtonNewGame;
     private Button mButtonContinue;
 
     public MainFragment() {
@@ -51,8 +50,8 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        mButtonNewGame = (Button) rootView.findViewById(R.id.main__button_new_game);
-        mButtonNewGame.setOnClickListener(new View.OnClickListener() {
+        Button buttonNewGame = (Button) rootView.findViewById(R.id.main__button_new_game);
+        buttonNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
@@ -65,8 +64,8 @@ public class MainFragment extends Fragment {
                     dimension = getResources().getInteger(R.integer.ms_default_dimension);
                     mines = getResources().getInteger(R.integer.ms_default_mines);
                 }
-                GameSettingsDialogFragment extendRideDialogFragment = GameSettingsDialogFragment.newInstance(dimension, mines);
-                extendRideDialogFragment.show(getFragmentManager(), GameSettingsDialogFragment.class.toString());
+                GameSettingsDialogFragment gameSettingsDialogFragment = GameSettingsDialogFragment.newInstance(dimension, mines);
+                gameSettingsDialogFragment.show(getFragmentManager(), GameSettingsDialogFragment.class.toString());
             }
         });
         mButtonContinue = (Button) rootView.findViewById(R.id.main__button_continue);
