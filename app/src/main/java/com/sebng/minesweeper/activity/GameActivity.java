@@ -21,6 +21,7 @@ public class GameActivity extends MSBaseActivity
     public static final String EXTRA_DIMENSION = "extra.DIMENSION";
     public static final String EXTRA_MINES = "extra.MINES";
     public static final String EXTRA_LOAD_GAME = "extra.LOAD_GAME";
+    public static final int INDEX_MENU_CHEAT = 4;
     protected GameWorkerFragment mWorkerFragment;
 
     protected GameFragment mGameFragment;
@@ -75,7 +76,14 @@ public class GameActivity extends MSBaseActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_game, menu);
-        return super.onCreateOptionsMenu(menu);
+        boolean outcome = super.onCreateOptionsMenu(menu);
+        FragmentManager fm = getFragmentManager();
+        mWorkerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+        if (mWorkerFragment != null) {
+            MSGame game = mWorkerFragment.getGame();
+            menu.getItem(INDEX_MENU_CHEAT).setChecked(game.getEnableCheat());
+        }
+        return outcome;
     }
 
     @Override
@@ -86,6 +94,7 @@ public class GameActivity extends MSBaseActivity
                 return true;
             case R.id.game__action_validate:
                 //TODO: show confirmation prompt
+            {
                 FragmentManager fm = getFragmentManager();
                 GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
 
@@ -97,7 +106,8 @@ public class GameActivity extends MSBaseActivity
                         workerFragment.validateGameAsync();
                     }
                 }
-                return true;
+            }
+            return true;
             case R.id.game__action_reset:
                 //TODO: show confirmation prompt
                 return true;
@@ -109,7 +119,18 @@ public class GameActivity extends MSBaseActivity
                 return true;
             case R.id.game__action_cheat:
                 item.setChecked(!item.isChecked());
-                return true;
+            {
+                FragmentManager fm = getFragmentManager();
+                GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+                if (workerFragment != null) {
+                    MSGame game = workerFragment.getGame();
+                    if (game != null) {
+                        workerFragment.toggleCheatModeAsync(!game.getEnableCheat());
+                    }
+                }
+            }
+            return true;
             case R.id.game__action_help:
                 showTutorial();
                 return true;
@@ -207,6 +228,30 @@ public class GameActivity extends MSBaseActivity
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onValidateGamePostExecute(result);
+        }
+    }
+
+    @Override
+    public void onToggleCheatModePreExecute() {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onToggleCheatModePreExecute();
+        }
+    }
+
+    @Override
+    public void onToggleCheatModeCancelled() {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onToggleCheatModeCancelled();
+        }
+    }
+
+    @Override
+    public void onToggleCheatModePostExecute(MSGame result) {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onToggleCheatModePostExecute(result);
         }
     }
 

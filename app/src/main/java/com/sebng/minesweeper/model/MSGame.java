@@ -11,18 +11,21 @@ public class MSGame extends MSObject {
     public final static String PARAM_KEY_HAS_STARTED = "has_started";
     public final static String PARAM_KEY_HAS_ENDED = "has_ended";
     public final static String PARAM_KEY_HAS_WON = "has_won";
+    public final static String PARAM_KEY_ENABLE_CHEAT = "enable_cheat";
 
     private Integer mDimension = null;
     private Integer mMines = null;
     private Boolean mHasStarted = null;
     private Boolean mHasEnded = null;
     private Boolean mHasWon = null;
+    private Boolean mEnableCheat = null;
 
     public MSGame(Integer dimension,
                   Integer mines,
                   Boolean hasStarted,
                   Boolean hasEnded,
-                  Boolean hasWon) {
+                  Boolean hasWon,
+                  Boolean enableCheat) {
         super();
 
         setDimension(dimension);
@@ -30,6 +33,7 @@ public class MSGame extends MSObject {
         setHasStarted(hasStarted);
         setHasEnded(hasEnded);
         setHasWon(hasWon);
+        setEnableCheat(enableCheat);
     }
 
     public Integer getDimension() {
@@ -72,6 +76,14 @@ public class MSGame extends MSObject {
         mHasWon = hasWon;
     }
 
+    public Boolean getEnableCheat() {
+        return mEnableCheat;
+    }
+
+    public void setEnableCheat(Boolean enableCheat) {
+        mEnableCheat = enableCheat;
+    }
+
     @Override
     public HashMap<String, String> toDict() {
         HashMap<String, String> obj = super.toDict();
@@ -80,6 +92,7 @@ public class MSGame extends MSObject {
         obj.put(PARAM_KEY_HAS_STARTED, getHasStarted() != null ? getHasStarted().toString() : null);
         obj.put(PARAM_KEY_HAS_ENDED, getHasEnded() != null ? getHasEnded().toString() : null);
         obj.put(PARAM_KEY_HAS_WON, getHasWon() != null ? getHasWon().toString() : null);
+        obj.put(PARAM_KEY_ENABLE_CHEAT, getEnableCheat() != null ? getEnableCheat().toString() : null);
         return obj;
     }
 }

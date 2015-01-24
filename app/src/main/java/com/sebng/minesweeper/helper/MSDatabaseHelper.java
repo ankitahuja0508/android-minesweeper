@@ -44,6 +44,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         ", %s real" +
                         ", %s real" +
                         ", %s real" +
+                        ", %s real" +
                         ");",
                 MSGame.DB_TABLE_NAME,
                 MSGame.PARAM_KEY_ID,
@@ -51,7 +52,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                 MSGame.PARAM_KEY_MINES,
                 MSGame.PARAM_KEY_HAS_STARTED,
                 MSGame.PARAM_KEY_HAS_ENDED,
-                MSGame.PARAM_KEY_HAS_WON));
+                MSGame.PARAM_KEY_HAS_WON,
+                MSGame.PARAM_KEY_ENABLE_CHEAT));
 
         db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
                         ", %s real" +
@@ -98,12 +100,13 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         cv.put(MSGame.PARAM_KEY_HAS_STARTED, 0);
         cv.put(MSGame.PARAM_KEY_HAS_ENDED, 0);
         cv.put(MSGame.PARAM_KEY_HAS_WON, 0);
+        cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, 0);
         if (loadGame() == null) {
             getWritableDatabase().insert(MSGame.DB_TABLE_NAME, MSGame.PARAM_KEY_ID, cv);
         } else {
             getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
         }
-        return new MSGame(dimension, mines, false, false, false);
+        return new MSGame(dimension, mines, false, false, false, false);
     }
 
     public void updateGame(MSGame game) {
@@ -115,6 +118,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
             cv.put(MSGame.PARAM_KEY_HAS_STARTED, game.getHasStarted() ? 1 : 0);
             cv.put(MSGame.PARAM_KEY_HAS_ENDED, game.getHasEnded() ? 1 : 0);
             cv.put(MSGame.PARAM_KEY_HAS_WON, game.getHasWon() ? 1 : 0);
+            cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, game.getEnableCheat() ? 1 : 0);
             getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
         }
     }
@@ -128,6 +132,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                                 ", %s" +
                                 ", %s" +
                                 ", %s" +
+                                ", %s" +
                                 " from %s",
                         MSGame.PARAM_KEY_ID,
                         MSGame.PARAM_KEY_DIMENSION,
@@ -135,6 +140,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         MSGame.PARAM_KEY_HAS_STARTED,
                         MSGame.PARAM_KEY_HAS_ENDED,
                         MSGame.PARAM_KEY_HAS_WON,
+                        MSGame.PARAM_KEY_ENABLE_CHEAT,
                         MSGame.DB_TABLE_NAME), null);
         while (result.moveToNext()) {
             int id = result.getInt(0);
@@ -143,7 +149,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                     result.getInt(2),
                     result.getInt(3) == 1,
                     result.getInt(4) == 1,
-                    result.getInt(5) == 1
+                    result.getInt(5) == 1,
+                    result.getInt(6) == 1
             ));
         }
         result.close();

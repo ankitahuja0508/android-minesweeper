@@ -7,11 +7,8 @@ import android.os.Bundle;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.helper.MSDatabaseHelper;
-import com.sebng.minesweeper.model.MSCell;
-import com.sebng.minesweeper.model.MSGameState;
 import com.sebng.minesweeper.model.MSGame;
-
-import java.util.List;
+import com.sebng.minesweeper.model.MSGameState;
 
 public class GameWorkerFragment extends Fragment {
     public static final String FRAGMENT_TAG = "fragment_tag.GameWorkerFragment";
@@ -22,6 +19,7 @@ public class GameWorkerFragment extends Fragment {
     protected MSGenerateGameDataTask mGenerateGameDataTask = null;
     protected MSExploreCellTask mExploreCellTask = null;
     protected MSValidateGameTask mValidateGameTask = null;
+    protected MSToggleCheatTask mToggleCheatTask = null;
 
     /**
      * Returns a new instance of this fragment.
@@ -114,6 +112,17 @@ public class GameWorkerFragment extends Fragment {
         mValidateGameTask.execute();
     }
 
+    public void toggleCheatModeAsync(boolean bEnable) {
+        if (mToggleCheatTask != null)
+            return;
+
+        mToggleCheatTask = new MSToggleCheatTask();
+        Object[] params = {
+                bEnable
+        };
+        mToggleCheatTask.execute(params);
+    }
+
     @Override
     public void onDestroy() {
         cancelAsyncTasks();
@@ -197,6 +206,12 @@ public class GameWorkerFragment extends Fragment {
         void onValidateGameCancelled();
 
         void onValidateGamePostExecute(MSGameState result);
+
+        void onToggleCheatModePreExecute();
+
+        void onToggleCheatModeCancelled();
+
+        void onToggleCheatModePostExecute(MSGame result);
     }
 
     public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGame> {
@@ -282,6 +297,37 @@ public class GameWorkerFragment extends Fragment {
         protected void onCancelled() {
             if (mCallbacks != null) mCallbacks.onValidateGameCancelled();
             mValidateGameTask = null;
+        }
+    }
+
+    public class MSToggleCheatTask extends AsyncTask<Object, Void, MSGame> {
+        @Override
+        public void onPreExecute() {
+            if (mCallbacks != null) mCallbacks.onToggleCheatModePreExecute();
+        }
+
+        @Override
+        protected MSGame doInBackground(Object... params) {
+            MSGame game = getGame();
+            if (params != null && params.length == 1) {
+                Boolean bEnable = (Boolean) params[0];
+                game.setEnableCheat(bEnable);
+                MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+                databaseHelper.updateGame(game);
+            }
+            return game;
+        }
+
+        @Override
+        protected void onPostExecute(MSGame result) {
+            if (mCallbacks != null) mCallbacks.onToggleCheatModePostExecute(result);
+            mToggleCheatTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mCallbacks != null) mCallbacks.onToggleCheatModeCancelled();
+            mToggleCheatTask = null;
         }
     }
 }

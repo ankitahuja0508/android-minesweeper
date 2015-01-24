@@ -106,7 +106,7 @@ public class GameFragment extends Fragment {
                         holder.getImageButtonFlagged().setVisibility(item.getIsFlagged() ? View.VISIBLE : View.GONE);
 
                         MSGame game = getGame();
-                        boolean shouldReveal = game != null && game.getHasEnded() && item.getHasMine();
+                        boolean shouldReveal = game != null && (game.getEnableCheat() || (game.getHasEnded() && item.getHasMine()));
                         float alpha = shouldReveal ? 0.7f : 1;
                         holder.getImageButtonMask().setAlpha(alpha);
                     }
@@ -284,6 +284,16 @@ public class GameFragment extends Fragment {
 
     public void onValidateGamePostExecute(MSGameState result) {
         updateViews(result);
+    }
+
+    public void onToggleCheatModePreExecute() {
+    }
+
+    public void onToggleCheatModeCancelled() {
+    }
+
+    public void onToggleCheatModePostExecute(MSGame result) {
+        updateViews(new MSGameState(result, null));
     }
 
     /**
