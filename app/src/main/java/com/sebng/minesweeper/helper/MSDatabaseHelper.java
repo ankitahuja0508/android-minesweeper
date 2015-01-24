@@ -205,7 +205,6 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                 }
                 cell.setAdjacentMines(adjacentMines);
             }
-            cell.setIsExplored(true);
             k++;
             insertCell(cell);
         }
@@ -215,7 +214,54 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return exploreCell(new MSGameState(game, cells), rowIndexFirstMove, colIndexFirstMove);
     }
 
+    public List<Pair<Integer, Integer>> revealBlankCells(MSGameState gameState, List<Pair<Integer, Integer>> coordinatesOfNewBlankCells) {
+        int dimension = gameState.getGame().getDimension();
+        List<MSCell> cells = gameState.getCells();
+        List<Pair<Integer, Integer>> coordinatesOfAdditionalNewBlankCell = new ArrayList<>();
+        for (Pair<Integer, Integer> coordinatesOfBlankCell : coordinatesOfNewBlankCells) {
+            for (int m = -1; m <= 1; m++) {
+                for (int n = -1; n <= 1; n++) {
+                    if ((m == 0 && n != 0) || (m != 0 && n == 0)) {
+                        int rowIndexOfAdjacentCell = coordinatesOfBlankCell.first + m;
+                        int colIndexOfAdjacentCell = coordinatesOfBlankCell.second + n;
+                        if (rowIndexOfAdjacentCell >= 0 && rowIndexOfAdjacentCell < dimension && colIndexOfAdjacentCell >= 0 && colIndexOfAdjacentCell < dimension) {
+                            int indexAdjacentCell = rowIndexOfAdjacentCell * dimension + colIndexOfAdjacentCell;
+                            MSCell adjacentCell = cells.get(indexAdjacentCell);
+                            if (!adjacentCell.getIsExplored() && !adjacentCell.getHasMine()) {
+                                adjacentCell.setIsExplored(true);
+                                if (adjacentCell.getAdjacentMines() == 0) {
+                                    coordinatesOfAdditionalNewBlankCell.add(new Pair<>(adjacentCell.getRowIndex(), adjacentCell.getColIndex()));
+                                }
+                                updateCell(adjacentCell);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return coordinatesOfAdditionalNewBlankCell;
+    }
+
     public MSGameState exploreCell(MSGameState gameState, int rowIndexMove, int colIndexMove) {
+        MSGame game = gameState.getGame();
+        if (!game.getHasEnded()) {
+            MSCell cell = gameState.getCells().get(rowIndexMove * game.getDimension() + colIndexMove);
+            if (cell != null) {
+                cell.setIsExplored(true);
+                updateCell(cell);
+                if (cell.getHasMine()) {
+                    game.setHasEnded(true);
+                    game.setHasWon(false);
+                    updateGame(game);
+                } else if (cell.getAdjacentMines() == 0) {
+                    List<Pair<Integer, Integer>> coordinatesOfNewBlankCells = new ArrayList<>();
+                    coordinatesOfNewBlankCells.add(new Pair<>(rowIndexMove, colIndexMove));
+                    do {
+                        coordinatesOfNewBlankCells = revealBlankCells(gameState, coordinatesOfNewBlankCells);
+                    } while (!coordinatesOfNewBlankCells.isEmpty());
+                }
+            }
+        }
         return gameState;
     }
 
