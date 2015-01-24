@@ -10,7 +10,7 @@ import android.view.MenuItem;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.fragment.GameFragment;
-import com.sebng.minesweeper.model.MSCells;
+import com.sebng.minesweeper.model.MSGameState;
 import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.worker.GameWorkerFragment;
 
@@ -123,7 +123,6 @@ public class GameActivity extends MSBaseActivity
 
     @Override
     public void onGenerateGameDataPreExecute() {
-        FragmentManager fm = getFragmentManager();
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onGenerateGameDataPreExecute();
@@ -132,7 +131,6 @@ public class GameActivity extends MSBaseActivity
 
     @Override
     public void onGenerateGameDataCancelled() {
-        FragmentManager fm = getFragmentManager();
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onGenerateGameDataCancelled();
@@ -146,7 +144,6 @@ public class GameActivity extends MSBaseActivity
             updateActionBarTitle(actionBar, result.getDimension(), result.getMines());
         }
 
-        FragmentManager fm = getFragmentManager();
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onGenerateGameDataPostExecute(result);
@@ -155,17 +152,26 @@ public class GameActivity extends MSBaseActivity
 
     @Override
     public void onExploreCellPreExecute() {
-
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onExploreCellPreExecute();
+        }
     }
 
     @Override
     public void onExploreCellCancelled() {
-
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onExploreCellCancelled();
+        }
     }
 
     @Override
-    public void onExploreCellPostExecute(MSCells result) {
-
+    public void onExploreCellPostExecute(MSGameState result) {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onExploreCellPostExecute(result);
+        }
     }
 
     @Override

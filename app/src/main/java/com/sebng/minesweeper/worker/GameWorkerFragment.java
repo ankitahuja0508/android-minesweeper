@@ -2,17 +2,15 @@ package com.sebng.minesweeper.worker;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ContentValues;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.helper.MSDatabaseHelper;
 import com.sebng.minesweeper.model.MSCell;
+import com.sebng.minesweeper.model.MSGameState;
 import com.sebng.minesweeper.model.MSGame;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameWorkerFragment extends Fragment {
@@ -22,6 +20,7 @@ public class GameWorkerFragment extends Fragment {
     protected static final String ARG_LOAD_GAME = "arg.LOAD_GAME";
     protected OnWorkerFragmentCallbacks mCallbacks = null;
     protected MSGenerateGameDataTask mGenerateGameDataTask = null;
+    protected MSExploreCellTask mExploreCellTask = null;
 
     /**
      * Returns a new instance of this fragment.
@@ -73,6 +72,28 @@ public class GameWorkerFragment extends Fragment {
         mGenerateGameDataTask.execute(params);
     }
 
+    public MSGameState exploreCell(int rowIndex, int colIndex) {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        MSGame game = databaseHelper.loadGame();
+        if (!game.getHasStarted()) {
+            return databaseHelper.resetCells(game.getDimension(), game.getMines(), rowIndex, colIndex);
+        } else {
+            return databaseHelper.exploreCell(new MSGameState(game, databaseHelper.loadCells()), rowIndex, colIndex);
+        }
+    }
+
+    public void exploreCellAsync(int rowIndex, int colIndex) {
+        if (mExploreCellTask != null)
+            return;
+
+        mExploreCellTask = new MSExploreCellTask();
+        Object[] params = {
+                rowIndex,
+                colIndex
+        };
+        mExploreCellTask.execute(params);
+    }
+
     @Override
     public void onDestroy() {
         cancelAsyncTasks();
@@ -81,6 +102,14 @@ public class GameWorkerFragment extends Fragment {
     }
 
     public void cancelAsyncTasks() {
+        cancelGenerateGameData();
+    }
+
+    public void cancelGenerateGameData() {
+        if (mGenerateGameDataTask != null &&
+                !mGenerateGameDataTask.isCancelled()) {
+            mGenerateGameDataTask.cancel(true);
+        }
     }
 
     @Override
@@ -101,7 +130,7 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGame getGame() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        return databaseHelper.loadGame();
+        return databaseHelper != null ? databaseHelper.loadGame() : null;
     }
 
     public int getDimension() {
@@ -120,6 +149,12 @@ public class GameWorkerFragment extends Fragment {
         void onGenerateGameDataCancelled();
 
         void onGenerateGameDataPostExecute(MSGame result);
+
+        void onExploreCellPreExecute();
+
+        void onExploreCellCancelled();
+
+        void onExploreCellPostExecute(MSGameState result);
     }
 
     public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGame> {
@@ -133,7 +168,7 @@ public class GameWorkerFragment extends Fragment {
             if (params != null && params.length == 2) {
                 Integer dimension = (Integer) params[0];
                 Integer mines = (Integer) params[1];
-                if (dimension != 0 && mines != 0) {
+                if (dimension != null && dimension != 0 && mines != null && mines != 0) {
                     return createNewGame(dimension, mines);
                 }
             }
@@ -150,6 +185,37 @@ public class GameWorkerFragment extends Fragment {
         protected void onCancelled() {
             if (mCallbacks != null) mCallbacks.onGenerateGameDataCancelled();
             mGenerateGameDataTask = null;
+        }
+    }
+
+    public class MSExploreCellTask extends AsyncTask<Object, Void, MSGameState> {
+        @Override
+        public void onPreExecute() {
+            if (mCallbacks != null) mCallbacks.onExploreCellPreExecute();
+        }
+
+        @Override
+        protected MSGameState doInBackground(Object... params) {
+            if (params != null && params.length == 2) {
+                Integer rowIndex = (Integer) params[0];
+                Integer colIndex = (Integer) params[1];
+                if (rowIndex != null && colIndex != null) {
+                    return exploreCell(rowIndex, colIndex);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(MSGameState result) {
+            if (mCallbacks != null) mCallbacks.onExploreCellPostExecute(result);
+            mExploreCellTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mCallbacks != null) mCallbacks.onExploreCellCancelled();
+            mExploreCellTask = null;
         }
     }
 }

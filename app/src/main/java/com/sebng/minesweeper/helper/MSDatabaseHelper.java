@@ -5,14 +5,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Pair;
 
 import com.sebng.minesweeper.BuildConfig;
 import com.sebng.minesweeper.MSApplication;
 import com.sebng.minesweeper.model.MSCell;
 import com.sebng.minesweeper.model.MSGame;
+import com.sebng.minesweeper.model.MSGameState;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Random;
 
 public class MSDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mine_sweeper";
@@ -102,6 +106,19 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return new MSGame(dimension, mines, false, false, false);
     }
 
+    public void updateGame(MSGame game) {
+        if (game != null) {
+            ContentValues cv = new ContentValues();
+            cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE);
+            cv.put(MSGame.PARAM_KEY_DIMENSION, game.getDimension());
+            cv.put(MSGame.PARAM_KEY_MINES, game.getMines());
+            cv.put(MSGame.PARAM_KEY_HAS_STARTED, game.getHasStarted() ? 1 : 0);
+            cv.put(MSGame.PARAM_KEY_HAS_ENDED, game.getHasEnded() ? 1 : 0);
+            cv.put(MSGame.PARAM_KEY_HAS_WON, game.getHasWon() ? 1 : 0);
+            getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
+        }
+    }
+
     public MSGame loadGame() {
         ArrayList<MSGame> games = new ArrayList<MSGame>();
         Cursor result = getReadableDatabase()
@@ -137,22 +154,69 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         getWritableDatabase().delete(MSCell.DB_TABLE_NAME, null, null);
     }
 
-    public List<MSCell> resetCells(int dimension, int mines, int row_index_first_move, int col_index_first_move) {
+    public MSGameState resetCells(int dimension, int mines, int rowIndexFirstMove, int colIndexFirstMove) {
         deleteAllCells();
         List<MSCell> cells = generateCells(dimension, mines);
-        for (MSCell cell : cells) {
-            ContentValues cv = new ContentValues();
-            cv.put(MSCell.PARAM_KEY_ID, cell.getId());
-            cv.put(MSCell.PARAM_KEY_ROW_INDEX, cell.getRowIndex());
-            cv.put(MSCell.PARAM_KEY_COL_INDEX, cell.getColIndex());
-            cv.put(MSCell.PARAM_KEY_IS_EXPLORED, cell.getIsExplored());
-            cv.put(MSCell.PARAM_KEY_IS_FLAGGED, cell.getIsFlagged());
-            cv.put(MSCell.PARAM_KEY_HAS_MINE, cell.getHasMine());
-            cv.put(MSCell.PARAM_KEY_ADJACENT_MINES, cell.getAdjacentMines());
-            getWritableDatabase().insert(MSCell.DB_TABLE_NAME, MSCell.PARAM_KEY_ID, cv);
-            cells.add(cell);
+
+        Hashtable<Integer, Boolean> indicesOfMineFreeCells = new Hashtable<>();
+        for (int m = -1; m <= 1; m++) {
+            for (int n = -1; n <= 1; n++) {
+                int rowIndexMineFreeCell = rowIndexFirstMove + m;
+                int colIndexMineFreeCell = colIndexFirstMove + n;
+                if (rowIndexMineFreeCell >= 0 && rowIndexMineFreeCell < dimension && colIndexMineFreeCell >= 0 && colIndexMineFreeCell < dimension) {
+                    int indexMineFreeCell = rowIndexMineFreeCell * dimension + colIndexMineFreeCell;
+                    indicesOfMineFreeCells.put(indexMineFreeCell, true);
+                }
+            }
         }
-        return cells;
+
+        Hashtable<Integer, Boolean> indicesOfMines = new Hashtable<>();
+        int totalCells = dimension * dimension;
+        Random random = new Random();
+        do {
+            int randomIndex = random.nextInt(totalCells);
+            if (!indicesOfMineFreeCells.containsKey(randomIndex) && !indicesOfMines.containsKey(randomIndex)) {
+                indicesOfMines.put(randomIndex, true);
+            }
+        } while (indicesOfMines.size() < mines);
+
+        int i, j, k = 0;
+
+        for (MSCell cell : cells) {
+            i = k / dimension;
+            j = k % dimension;
+            if (indicesOfMines.containsKey(k)) {
+                cell.setHasMine(true);
+            } else {
+                int adjacentMines = 0;
+                for (int m = -1; m <= 1; m++) {
+                    for (int n = -1; n <= 1; n++) {
+                        if (m != 0 || n != 0) {
+                            int rowIndexOfAdjacentCell = i + m;
+                            int colIndexOfAdjacentCell = j + n;
+                            if (rowIndexOfAdjacentCell >= 0 && rowIndexOfAdjacentCell < dimension && colIndexOfAdjacentCell >= 0 && colIndexOfAdjacentCell < dimension) {
+                                int indexAdjacentCell = rowIndexOfAdjacentCell * dimension + colIndexOfAdjacentCell;
+                                if (indicesOfMines.containsKey(indexAdjacentCell)) {
+                                    adjacentMines++;
+                                }
+                            }
+                        }
+                    }
+                }
+                cell.setAdjacentMines(adjacentMines);
+            }
+            cell.setIsExplored(true);
+            k++;
+            insertCell(cell);
+        }
+        MSGame game = loadGame();
+        game.setHasStarted(true);
+        updateGame(game);
+        return exploreCell(new MSGameState(game, cells), rowIndexFirstMove, colIndexFirstMove);
+    }
+
+    public MSGameState exploreCell(MSGameState gameState, int rowIndexMove, int colIndexMove) {
+        return gameState;
     }
 
     public List<MSCell> generateCells(int dimension, int mines) {
@@ -198,5 +262,31 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         }
         result.close();
         return cells;
+    }
+
+    public void insertOrUpdateCell(MSCell cell, boolean bUpdate) {
+        if (cell != null) {
+            ContentValues cv = new ContentValues();
+            cv.put(MSCell.PARAM_KEY_ID, cell.getId());
+            cv.put(MSCell.PARAM_KEY_ROW_INDEX, cell.getRowIndex());
+            cv.put(MSCell.PARAM_KEY_COL_INDEX, cell.getColIndex());
+            cv.put(MSCell.PARAM_KEY_IS_EXPLORED, cell.getIsExplored());
+            cv.put(MSCell.PARAM_KEY_IS_FLAGGED, cell.getIsFlagged());
+            cv.put(MSCell.PARAM_KEY_HAS_MINE, cell.getHasMine());
+            cv.put(MSCell.PARAM_KEY_ADJACENT_MINES, cell.getAdjacentMines());
+            if (bUpdate) {
+                getWritableDatabase().update(MSCell.DB_TABLE_NAME, cv, MSCell.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(cell.getId())});
+            } else {
+                getWritableDatabase().insert(MSCell.DB_TABLE_NAME, MSCell.PARAM_KEY_ID, cv);
+            }
+        }
+    }
+
+    public void insertCell(MSCell cell) {
+        insertOrUpdateCell(cell, false);
+    }
+
+    public void updateCell(MSCell cell) {
+        insertOrUpdateCell(cell, true);
     }
 }
