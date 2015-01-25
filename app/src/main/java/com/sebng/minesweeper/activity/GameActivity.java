@@ -128,7 +128,7 @@ public class GameActivity extends MSBaseActivity
                     }
                 }
                 return true;
-            case R.id.game__action_reset:
+            case R.id.game__action_restart:
                 if (workerFragment != null) {
                     MSGame game = workerFragment.getGame();
                     if (game != null) {
@@ -137,9 +137,9 @@ public class GameActivity extends MSBaseActivity
                                 workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
                             } else {
                                 new AlertDialog.Builder(this)
-                                        .setTitle(getString(R.string.game__reset_confirmation_dialog___title))
-                                        .setMessage(getString(R.string.game__reset_confirmation_dialog___prompt))
-                                        .setPositiveButton(getString(R.string.game__reset_confirmation_dialog___button_positive), new DialogInterface.OnClickListener() {
+                                        .setTitle(getString(R.string.game__restart_confirmation_dialog___title))
+                                        .setMessage(getString(R.string.game__restart_confirmation_dialog___prompt))
+                                        .setPositiveButton(getString(R.string.game__restart_confirmation_dialog___button_positive), new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 FragmentManager fm = getFragmentManager();

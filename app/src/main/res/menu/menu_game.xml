@@ -8,8 +8,8 @@
         android:icon="@drawable/ic_action_accept"
         android:showAsAction="ifRoom" />
     <item
-        android:id="@+id/game__action_reset"
-        android:title="@string/action_reset"
+        android:id="@+id/game__action_restart"
+        android:title="@string/action_restart"
         android:orderInCategory="200"
         android:showAsAction="never" />
     <item
