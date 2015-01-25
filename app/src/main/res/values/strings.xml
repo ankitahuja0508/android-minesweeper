@@ -21,7 +21,6 @@
     <string name="game__ended_and_won">The game has ended. You have won!</string>
     <string name="game__ended_and_lost">The game has ended. You have lost.</string>
     <string name="game__validate_disallowed_first_move_required">You can only validate after you have made your first move.</string>
-    <string name="game__flag_mode_disallowed_first_move_required">You can only enable flag mode after you have made your first move.</string>
     <string name="game__cheat_shown_only_after_first_move">Cheat will only take effect after you have made your first move.</string>
 
 </resources>
