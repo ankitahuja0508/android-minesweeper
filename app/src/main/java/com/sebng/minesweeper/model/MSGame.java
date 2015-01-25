@@ -12,6 +12,7 @@ public class MSGame extends MSObject {
     public final static String PARAM_KEY_HAS_ENDED = "has_ended";
     public final static String PARAM_KEY_HAS_WON = "has_won";
     public final static String PARAM_KEY_ENABLE_CHEAT = "enable_cheat";
+    public final static String PARAM_KEY_ENABLE_FLAG_MODE = "enable_flag_mode";
 
     private Integer mDimension = null;
     private Integer mMines = null;
@@ -19,13 +20,15 @@ public class MSGame extends MSObject {
     private Boolean mHasEnded = null;
     private Boolean mHasWon = null;
     private Boolean mEnableCheat = null;
+    private Boolean mEnableFlagMode = null;
 
     public MSGame(Integer dimension,
                   Integer mines,
                   Boolean hasStarted,
                   Boolean hasEnded,
                   Boolean hasWon,
-                  Boolean enableCheat) {
+                  Boolean enableCheat,
+                  Boolean enableFlagMode) {
         super();
 
         setDimension(dimension);
@@ -34,6 +37,7 @@ public class MSGame extends MSObject {
         setHasEnded(hasEnded);
         setHasWon(hasWon);
         setEnableCheat(enableCheat);
+        setEnableFlagMode(enableFlagMode);
     }
 
     public Integer getDimension() {
@@ -84,6 +88,14 @@ public class MSGame extends MSObject {
         mEnableCheat = enableCheat;
     }
 
+    public Boolean getEnableFlagMode() {
+        return mEnableFlagMode;
+    }
+
+    public void setEnableFlagMode(Boolean enableFlagMode) {
+        mEnableFlagMode = enableFlagMode;
+    }
+
     @Override
     public HashMap<String, String> toDict() {
         HashMap<String, String> obj = super.toDict();
@@ -93,6 +105,7 @@ public class MSGame extends MSObject {
         obj.put(PARAM_KEY_HAS_ENDED, getHasEnded() != null ? getHasEnded().toString() : null);
         obj.put(PARAM_KEY_HAS_WON, getHasWon() != null ? getHasWon().toString() : null);
         obj.put(PARAM_KEY_ENABLE_CHEAT, getEnableCheat() != null ? getEnableCheat().toString() : null);
+        obj.put(PARAM_KEY_ENABLE_FLAG_MODE, getEnableFlagMode() != null ? getEnableFlagMode().toString() : null);
         return obj;
     }
 }

@@ -20,7 +20,7 @@ import java.util.Random;
 
 public class MSDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mine_sweeper";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static MSDatabaseHelper mInstance = null;
     private Context mContext;
 
@@ -45,6 +45,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         ", %s real" +
                         ", %s real" +
                         ", %s real" +
+                        ", %s real" +
                         ");",
                 MSGame.DB_TABLE_NAME,
                 MSGame.PARAM_KEY_ID,
@@ -53,7 +54,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                 MSGame.PARAM_KEY_HAS_STARTED,
                 MSGame.PARAM_KEY_HAS_ENDED,
                 MSGame.PARAM_KEY_HAS_WON,
-                MSGame.PARAM_KEY_ENABLE_CHEAT));
+                MSGame.PARAM_KEY_ENABLE_CHEAT,
+                MSGame.PARAM_KEY_ENABLE_FLAG_MODE));
 
         db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
                         ", %s real" +
@@ -101,12 +103,13 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         cv.put(MSGame.PARAM_KEY_HAS_ENDED, 0);
         cv.put(MSGame.PARAM_KEY_HAS_WON, 0);
         cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, 0);
+        cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, 0);
         if (loadGame() == null) {
             getWritableDatabase().insert(MSGame.DB_TABLE_NAME, MSGame.PARAM_KEY_ID, cv);
         } else {
             getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
         }
-        return new MSGame(dimension, mines, false, false, false, false);
+        return new MSGame(dimension, mines, false, false, false, false, false);
     }
 
     public void updateGame(MSGame game) {
@@ -119,6 +122,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
             cv.put(MSGame.PARAM_KEY_HAS_ENDED, game.getHasEnded() ? 1 : 0);
             cv.put(MSGame.PARAM_KEY_HAS_WON, game.getHasWon() ? 1 : 0);
             cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, game.getEnableCheat() ? 1 : 0);
+            cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, game.getEnableFlagMode() ? 1 : 0);
             getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
         }
     }
@@ -133,6 +137,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                                 ", %s" +
                                 ", %s" +
                                 ", %s" +
+                                ", %s" +
                                 " from %s",
                         MSGame.PARAM_KEY_ID,
                         MSGame.PARAM_KEY_DIMENSION,
@@ -141,6 +146,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         MSGame.PARAM_KEY_HAS_ENDED,
                         MSGame.PARAM_KEY_HAS_WON,
                         MSGame.PARAM_KEY_ENABLE_CHEAT,
+                        MSGame.PARAM_KEY_ENABLE_FLAG_MODE,
                         MSGame.DB_TABLE_NAME), null);
         while (result.moveToNext()) {
             int id = result.getInt(0);
@@ -150,7 +156,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                     result.getInt(3) == 1,
                     result.getInt(4) == 1,
                     result.getInt(5) == 1,
-                    result.getInt(6) == 1
+                    result.getInt(6) == 1,
+                    result.getInt(7) == 1
             ));
         }
         result.close();
@@ -259,22 +266,44 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public MSGameState exploreCell(MSGameState gameState, int rowIndexMove, int colIndexMove) {
-        MSGame game = gameState.getGame();
-        if (!game.getHasEnded()) {
-            MSCell cell = gameState.getCells().get(rowIndexMove * game.getDimension() + colIndexMove);
-            if (cell != null) {
-                cell.setIsExplored(true);
-                updateCell(cell);
-                if (cell.getHasMine()) {
-                    game.setHasEnded(true);
-                    game.setHasWon(false);
-                    updateGame(game);
-                } else if (cell.getAdjacentMines() == 0) {
-                    List<Pair<Integer, Integer>> coordinatesOfNewBlankCells = new ArrayList<>();
-                    coordinatesOfNewBlankCells.add(new Pair<>(rowIndexMove, colIndexMove));
-                    do {
-                        coordinatesOfNewBlankCells = revealBlankCells(gameState, coordinatesOfNewBlankCells);
-                    } while (!coordinatesOfNewBlankCells.isEmpty());
+        if (gameState != null) {
+            MSGame game = gameState.getGame();
+            if (game != null && !game.getHasEnded()) {
+                List<MSCell> cells = gameState.getCells();
+                if (cells != null && !cells.isEmpty()) {
+                    MSCell cell = cells.get(rowIndexMove * game.getDimension() + colIndexMove);
+                    if (cell != null) {
+                        cell.setIsExplored(true);
+                        updateCell(cell);
+                        if (cell.getHasMine()) {
+                            game.setHasEnded(true);
+                            game.setHasWon(false);
+                            updateGame(game);
+                        } else if (cell.getAdjacentMines() == 0) {
+                            List<Pair<Integer, Integer>> coordinatesOfNewBlankCells = new ArrayList<>();
+                            coordinatesOfNewBlankCells.add(new Pair<>(rowIndexMove, colIndexMove));
+                            do {
+                                coordinatesOfNewBlankCells = revealBlankCells(gameState, coordinatesOfNewBlankCells);
+                            } while (!coordinatesOfNewBlankCells.isEmpty());
+                        }
+                    }
+                }
+            }
+        }
+        return gameState;
+    }
+
+    public MSGameState flagCell(MSGameState gameState, int rowIndexMove, int colIndexMove, boolean bFlag) {
+        if (gameState != null) {
+            MSGame game = gameState.getGame();
+            if (game != null && !game.getHasEnded() && game.getEnableFlagMode()) {
+                List<MSCell> cells = gameState.getCells();
+                if (cells != null && !cells.isEmpty()) {
+                    MSCell cell = cells.get(rowIndexMove * game.getDimension() + colIndexMove);
+                    if (cell != null && !cell.getIsExplored()) {
+                        cell.setIsFlagged(bFlag);
+                        updateCell(cell);
+                    }
                 }
             }
         }

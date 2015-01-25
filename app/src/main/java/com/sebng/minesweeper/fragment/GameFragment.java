@@ -102,13 +102,15 @@ public class GameFragment extends Fragment {
                         holder.getImageButtonMask().setVisibility(View.GONE);
                         holder.getImageButtonFlagged().setVisibility(View.GONE);
                     } else {
-                        holder.getImageButtonMask().setVisibility(View.VISIBLE);
-                        holder.getImageButtonFlagged().setVisibility(item.getIsFlagged() ? View.VISIBLE : View.GONE);
+                        boolean isFlagged = item.getIsFlagged();
+                        holder.getImageButtonFlagged().setVisibility(isFlagged ? View.VISIBLE : View.GONE);
+                        holder.getImageButtonMask().setVisibility(isFlagged ? View.GONE : View.VISIBLE);
 
                         MSGame game = getGame();
-                        boolean shouldReveal = game != null && (game.getEnableCheat() || (game.getHasEnded() && item.getHasMine()));
+                        boolean shouldReveal = game != null && (game.getEnableCheat() || (game.getHasEnded() && (item.getHasMine() || item.getIsFlagged())));
                         float alpha = shouldReveal ? 0.7f : 1;
                         holder.getImageButtonMask().setAlpha(alpha);
+                        holder.getImageButtonFlagged().setAlpha(alpha);
                     }
                     int resId;
                     if (item.getHasMine()) {
@@ -222,6 +224,33 @@ public class GameFragment extends Fragment {
         updateViews(null);
     }
 
+    public void invokeMove(Integer cellId) {
+        if (cellId != null) {
+            List<MSCell> cells = getCells();
+            int index = cellId - 1;
+            if (index < cells.size()) {
+                MSCell cell = cells.get(index);
+                if (cell != null) {
+                    FragmentManager fm = getFragmentManager();
+                    GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+                    if (workerFragment != null) {
+                        MSGame game = workerFragment.getGame();
+                        if (game.getHasEnded()) {
+                            Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (game.getEnableFlagMode()) {
+                                workerFragment.flagCellAsync(cell.getRowIndex(), cell.getColIndex(), !cell.getIsFlagged());
+                            } else {
+                                workerFragment.exploreCellAsync(cell.getRowIndex(), cell.getColIndex());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public MSGame getGame() {
         FragmentManager fm = getFragmentManager();
         GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
@@ -296,6 +325,25 @@ public class GameFragment extends Fragment {
         updateViews(new MSGameState(result, null));
     }
 
+    public void onToggleFlagModePreExecute() {
+    }
+
+    public void onToggleFlagModeCancelled() {
+    }
+
+    public void onToggleFlagModePostExecute(MSGame result) {
+    }
+
+    public void onFlagCellPreExecute() {
+    }
+
+    public void onFlagCellCancelled() {
+    }
+
+    public void onFlagCellPostExecute(MSGameState result) {
+        updateViews(result);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -323,33 +371,13 @@ public class GameFragment extends Fragment {
             getImageButtonMask().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Integer cellId = getCellId();
-                    if (cellId != null) {
-                        List<MSCell> cells = getCells();
-                        int index = cellId - 1;
-                        if (index < cells.size()) {
-                            MSCell cell = cells.get(index);
-                            if (cell != null) {
-                                FragmentManager fm = getFragmentManager();
-                                GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-
-                                if (workerFragment != null) {
-                                    MSGame game = workerFragment.getGame();
-                                    if (game.getHasEnded()) {
-                                        Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        workerFragment.exploreCellAsync(cell.getRowIndex(), cell.getColIndex());
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    invokeMove(getCellId());
                 }
             });
             getImageButtonFlagged().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //TODO: mark cell as flagged
+                    invokeMove(getCellId());
                 }
             });
         }
