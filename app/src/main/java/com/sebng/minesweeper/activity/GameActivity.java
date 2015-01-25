@@ -45,7 +45,7 @@ public class GameActivity extends MSBaseActivity
                 loadGame = intent.getBooleanExtra(EXTRA_LOAD_GAME, false);
             } else {
                 dimension = resources.getInteger(R.integer.ms_default_dimension);
-                mines = resources.getInteger(R.integer.ms_default_dimension);
+                mines = resources.getInteger(R.integer.ms_default_mines);
             }
 
             mWorkerFragment = GameWorkerFragment.newInstance(dimension, mines, loadGame);
