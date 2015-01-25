@@ -248,32 +248,36 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return exploreTile(new MSGameState(game, tiles), rowIndexFirstMove, colIndexFirstMove);
     }
 
-    public List<Pair<Integer, Integer>> revealBlankTiles(MSGameState gameState, List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles) {
-        int dimension = gameState.getGame().getDimension();
-        List<MSTile> tiles = gameState.getTiles();
-        List<Pair<Integer, Integer>> coordinatesOfAdditionalNewBlankTiles = new ArrayList<>();
-        for (Pair<Integer, Integer> coordinatesOfBlankTile : coordinatesOfNewBlankTiles) {
-            for (int m = -1; m <= 1; m++) {
-                for (int n = -1; n <= 1; n++) {
-                    if ((m == 0 && n != 0) || (m != 0 && n == 0)) {
-                        int rowIndexOfAdjacentTile = coordinatesOfBlankTile.first + m;
-                        int colIndexOfAdjacentTile = coordinatesOfBlankTile.second + n;
-                        if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
-                            int indexAdjacentTile = rowIndexOfAdjacentTile * dimension + colIndexOfAdjacentTile;
-                            MSTile adjacentTile = tiles.get(indexAdjacentTile);
-                            if (!adjacentTile.getIsExplored() && !adjacentTile.getHasMine()) {
-                                adjacentTile.setIsExplored(true);
-                                if (adjacentTile.getAdjacentMines() == 0) {
-                                    coordinatesOfAdditionalNewBlankTiles.add(new Pair<>(adjacentTile.getRowIndex(), adjacentTile.getColIndex()));
+    public void revealBlankTiles(MSGameState gameState, List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles) {
+        if (coordinatesOfNewBlankTiles != null && !coordinatesOfNewBlankTiles.isEmpty()) {
+            List<Pair<Integer, Integer>> coordinatesOfAdditionalNewBlankTiles = new ArrayList<>();
+            int dimension = gameState.getGame().getDimension();
+            List<MSTile> tiles = gameState.getTiles();
+            for (Pair<Integer, Integer> coordinatesOfBlankTile : coordinatesOfNewBlankTiles) {
+                for (int m = -1; m <= 1; m++) {
+                    for (int n = -1; n <= 1; n++) {
+                        if ((m == 0 && n != 0) || (m != 0 && n == 0)) {
+                            int rowIndexOfAdjacentTile = coordinatesOfBlankTile.first + m;
+                            int colIndexOfAdjacentTile = coordinatesOfBlankTile.second + n;
+                            if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
+                                int indexAdjacentTile = rowIndexOfAdjacentTile * dimension + colIndexOfAdjacentTile;
+                                MSTile adjacentTile = tiles.get(indexAdjacentTile);
+                                if (!adjacentTile.getIsExplored() && !adjacentTile.getHasMine()) {
+                                    adjacentTile.setIsExplored(true);
+                                    if (adjacentTile.getAdjacentMines() == 0) {
+                                        coordinatesOfAdditionalNewBlankTiles.add(new Pair<>(adjacentTile.getRowIndex(), adjacentTile.getColIndex()));
+                                    }
+                                    updateTile(adjacentTile);
                                 }
-                                updateTile(adjacentTile);
                             }
                         }
                     }
                 }
             }
+            if (!coordinatesOfAdditionalNewBlankTiles.isEmpty()) {
+                revealBlankTiles(gameState, coordinatesOfAdditionalNewBlankTiles);
+            }
         }
-        return coordinatesOfAdditionalNewBlankTiles;
     }
 
     public MSGameState exploreTile(MSGameState gameState, int rowIndexMove, int colIndexMove) {
@@ -293,9 +297,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         } else if (tile.getAdjacentMines() == 0) {
                             List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles = new ArrayList<>();
                             coordinatesOfNewBlankTiles.add(new Pair<>(rowIndexMove, colIndexMove));
-                            do {
-                                coordinatesOfNewBlankTiles = revealBlankTiles(gameState, coordinatesOfNewBlankTiles);
-                            } while (!coordinatesOfNewBlankTiles.isEmpty());
+                            revealBlankTiles(gameState, coordinatesOfNewBlankTiles);
                         }
                     }
                 }
