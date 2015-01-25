@@ -200,17 +200,23 @@ public class GameFragment extends Fragment {
     }
 
     public void updateViews(MSGameState gameState) {
-        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        if (gameState == null) {
-            gameState = new MSGameState(databaseHelper.loadGame(), databaseHelper.loadTiles());
-        }
-        MSGame game = gameState.getGame();
-        if (game != null) {
-            setTiles(gameState.getTiles());
-            mGridView.setNumColumns(getDimension());
-            getArrayAdapterForTiles().notifyDataSetChanged();
-            if (game.getHasEnded()) {
-                Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+        FragmentManager fm = getFragmentManager();
+        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+
+        if (workerFragment != null && !workerFragment.getIsCreatingNewGame()) {
+            MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+            if (gameState == null) {
+                gameState = new MSGameState(databaseHelper.loadGame(), databaseHelper.loadTiles());
+            }
+            MSGame game = gameState.getGame();
+            if (game != null) {
+                setTiles(gameState.getTiles());
+                mGridView.setNumColumns(getDimension());
+                getArrayAdapterForTiles().notifyDataSetChanged();
+
+                if (game.getHasEnded()) {
+                    Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

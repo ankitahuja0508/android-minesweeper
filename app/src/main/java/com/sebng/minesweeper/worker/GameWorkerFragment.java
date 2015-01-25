@@ -16,6 +16,7 @@ public class GameWorkerFragment extends Fragment {
     protected static final String ARG_MINES = "arg.MINES";
     protected static final String ARG_LOAD_GAME = "arg.LOAD_GAME";
     protected OnWorkerFragmentCallbacks mCallbacks = null;
+    protected boolean mIsCreatingNewGame = false;
     protected MSCreateNewGameTask mCreateNewGameTask = null;
     protected MSExploreTileTask mExploreTileTask = null;
     protected MSFlagTileTask mFlagTileTask = null;
@@ -53,6 +54,14 @@ public class GameWorkerFragment extends Fragment {
                 createNewGameAsync(dimension, mines);
             }
         }
+    }
+
+    public boolean getIsCreatingNewGame() {
+        return mIsCreatingNewGame;
+    }
+
+    public void setIsCreatingNewGame(boolean isCreatingNewGame) {
+        mIsCreatingNewGame = isCreatingNewGame;
     }
 
     public MSGameState createNewGame(int dimension, int mines) {
@@ -285,6 +294,7 @@ public class GameWorkerFragment extends Fragment {
     public class MSCreateNewGameTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
+            setIsCreatingNewGame(true);
             if (mCallbacks != null) mCallbacks.onCreateNewGamePreExecute();
         }
 
@@ -302,6 +312,7 @@ public class GameWorkerFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MSGameState result) {
+            setIsCreatingNewGame(false);
             if (mCallbacks != null) mCallbacks.onCreateNewGamePostExecute(result);
             mCreateNewGameTask = null;
         }
