@@ -179,9 +179,11 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
 
     public MSGameState validateGame(MSGameState gameState) {
         MSGame game = gameState.getGame();
-        game.setHasEnded(true);
-        game.setHasWon(getNumberOfUnexploredTiles() == game.getMines());
-        updateGame(game);
+        if (game != null) {
+            game.setHasEnded(true);
+            game.setHasWon(getNumberOfUnexploredTiles() == game.getMines());
+            updateGame(game);
+        }
         return gameState;
     }
 
