@@ -179,9 +179,11 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
 
     public MSGameState validateGame(MSGameState gameState) {
         MSGame game = gameState.getGame();
-        game.setHasEnded(true);
-        game.setHasWon(getNumberOfUnexploredTiles() == game.getMines());
-        updateGame(game);
+        if (game != null) {
+            game.setHasEnded(true);
+            game.setHasWon(getNumberOfUnexploredTiles() == game.getMines());
+            updateGame(game);
+        }
         return gameState;
     }
 
@@ -298,6 +300,9 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                             List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles = new ArrayList<>();
                             coordinatesOfNewBlankTiles.add(new Pair<>(rowIndexMove, colIndexMove));
                             revealBlankTiles(gameState, coordinatesOfNewBlankTiles);
+                            if (getNumberOfUnexploredTiles() == game.getMines()) {
+                                validateGame(gameState);
+                            }
                         }
                     }
                 }
