@@ -6,19 +6,19 @@ import java.util.List;
 
 public class MSGameState extends MSObject {
     public final static String PARAM_KEY_GAME = "game";
-    public final static String PARAM_KEY_CELLS = "cells";
+    public final static String PARAM_KEY_TILES = "tiles";
     private MSGame mGame = null;
-    private List<MSCell> mCells = null;
+    private List<MSTile> mTiles = null;
 
     public MSGameState() {
-        setCells(new ArrayList<MSCell>());
+        setTiles(new ArrayList<MSTile>());
     }
 
-    public MSGameState(MSGame game, List<MSCell> cell) {
+    public MSGameState(MSGame game, List<MSTile> tile) {
         super();
 
         setGame(game);
-        setCells(cell);
+        setTiles(tile);
     }
 
     public MSGame getGame() {
@@ -29,19 +29,19 @@ public class MSGameState extends MSObject {
         mGame = game;
     }
 
-    public List<MSCell> getCells() {
-        return mCells;
+    public List<MSTile> getTiles() {
+        return mTiles;
     }
 
-    public void setCells(List<MSCell> cells) {
-        mCells = cells;
+    public void setTiles(List<MSTile> tiles) {
+        mTiles = tiles;
     }
 
     @Override
     public HashMap<String, String> toDict() {
         HashMap<String, String> obj = super.toDict();
-        obj.put(PARAM_KEY_GAME, getCells() != null ? getCells().toString() : null);
-        obj.put(PARAM_KEY_CELLS, getCells() != null ? getCells().toString() : null);
+        obj.put(PARAM_KEY_GAME, getTiles() != null ? getTiles().toString() : null);
+        obj.put(PARAM_KEY_TILES, getTiles() != null ? getTiles().toString() : null);
         return obj;
     }
 }

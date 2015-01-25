@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.helper.MSDatabaseHelper;
-import com.sebng.minesweeper.model.MSCell;
+import com.sebng.minesweeper.model.MSTile;
 import com.sebng.minesweeper.model.MSGameState;
 import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.worker.GameWorkerFragment;
@@ -32,8 +32,8 @@ import java.util.List;
  */
 public class GameFragment extends Fragment {
     public static final String FRAGMENT_TAG = "fragment_tag.GameFragment";
-    private ArrayAdapter<MSCell> mArrayAdapterForBoardCells;
-    private List<MSCell> mCells;
+    private ArrayAdapter<MSTile> mArrayAdapterForTiles;
+    private List<MSTile> mTiles;
     private GridView mGridView;
 
     private OnFragmentInteractionListener mListener;
@@ -61,7 +61,7 @@ public class GameFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview);
         mGridView.setNumColumns(getDimension());
-        setArrayAdapterForBoardCells(new ArrayAdapter<MSCell>(getActivity(), 0) {
+        setArrayAdapterForTiles(new ArrayAdapter<MSTile>(getActivity(), 0) {
             @Override
             public boolean areAllItemsEnabled() {
                 return false;
@@ -74,18 +74,18 @@ public class GameFragment extends Fragment {
 
             @Override
             public int getCount() {
-                return getCells() != null ? getCells().size() : 0;
+                return getTiles() != null ? getTiles().size() : 0;
             }
 
             @Override
-            public MSCell getItem(int position) {
-                return getCells() != null ? getCells().get(position) : null;
+            public MSTile getItem(int position) {
+                return getTiles() != null ? getTiles().get(position) : null;
             }
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
-                    convertView = getActivity().getLayoutInflater().inflate(getResources().getLayout(R.layout.grid_item_board_cells), null);
+                    convertView = getActivity().getLayoutInflater().inflate(getResources().getLayout(R.layout.grid_item_tiles), null);
                 }
 
                 GridItemViewHolder holder = (GridItemViewHolder) convertView.getTag();
@@ -95,9 +95,9 @@ public class GameFragment extends Fragment {
                     convertView.setTag(holder);
                 }
 
-                MSCell item = getItem(position);
+                MSTile item = getItem(position);
                 if (item != null) {
-                    holder.setCellId(item.getId());
+                    holder.setTileId(item.getId());
                     if (item.getIsExplored()) {
                         holder.getImageButtonMask().setVisibility(View.GONE);
                         holder.getImageButtonFlagged().setVisibility(View.GONE);
@@ -114,38 +114,38 @@ public class GameFragment extends Fragment {
                     }
                     int resId;
                     if (item.getHasMine()) {
-                        resId = R.drawable.ic_cell_bomb;
+                        resId = R.drawable.ic_tile_bomb;
                     } else {
                         switch (item.getAdjacentMines()) {
                             case 0: // start with 0 because it is most common
-                                resId = R.drawable.ic_cell_blank;
+                                resId = R.drawable.ic_tile_blank;
                                 break;
                             case 1:
-                                resId = R.drawable.ic_cell_number_1;
+                                resId = R.drawable.ic_tile_number_1;
                                 break;
                             case 2:
-                                resId = R.drawable.ic_cell_number_2;
+                                resId = R.drawable.ic_tile_number_2;
                                 break;
                             case 3:
-                                resId = R.drawable.ic_cell_number_3;
+                                resId = R.drawable.ic_tile_number_3;
                                 break;
                             case 4:
-                                resId = R.drawable.ic_cell_number_4;
+                                resId = R.drawable.ic_tile_number_4;
                                 break;
                             case 5:
-                                resId = R.drawable.ic_cell_number_5;
+                                resId = R.drawable.ic_tile_number_5;
                                 break;
                             case 6:
-                                resId = R.drawable.ic_cell_number_6;
+                                resId = R.drawable.ic_tile_number_6;
                                 break;
                             case 7:
-                                resId = R.drawable.ic_cell_number_7;
+                                resId = R.drawable.ic_tile_number_7;
                                 break;
                             case 8:
-                                resId = R.drawable.ic_cell_number_8;
+                                resId = R.drawable.ic_tile_number_8;
                                 break;
                             default:
-                                resId = R.drawable.ic_cell_blank;
+                                resId = R.drawable.ic_tile_blank;
                                 break;
                         }
                     }
@@ -167,10 +167,10 @@ public class GameFragment extends Fragment {
 
             @Override
             public boolean isEmpty() {
-                return getCells() == null || getCells().isEmpty();
+                return getTiles() == null || getTiles().isEmpty();
             }
         });
-        mGridView.setAdapter(getArrayAdapterForBoardCells());
+        mGridView.setAdapter(getArrayAdapterForTiles());
         return rootView;
     }
 
@@ -202,15 +202,15 @@ public class GameFragment extends Fragment {
     public void updateViews(MSGameState gameState) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         if (gameState == null) {
-            gameState = new MSGameState(databaseHelper.loadGame(), databaseHelper.loadCells());
+            gameState = new MSGameState(databaseHelper.loadGame(), databaseHelper.loadTiles());
         }
         MSGame game = gameState.getGame();
         if (game != null) {
             int dimension = game.getDimension();
-            List<MSCell> cells = gameState.getCells();
-            setCells(cells);
+            List<MSTile> tiles = gameState.getTiles();
+            setTiles(tiles);
             mGridView.setNumColumns(dimension);
-            getArrayAdapterForBoardCells().notifyDataSetChanged();
+            getArrayAdapterForTiles().notifyDataSetChanged();
             if (game.getHasEnded()) {
                 Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
             }
@@ -221,13 +221,13 @@ public class GameFragment extends Fragment {
         updateViews(null);
     }
 
-    public void invokeMove(Integer cellId) {
-        if (cellId != null) {
-            List<MSCell> cells = getCells();
-            int index = cellId - 1;
-            if (index < cells.size()) {
-                MSCell cell = cells.get(index);
-                if (cell != null) {
+    public void invokeMove(Integer tileId) {
+        if (tileId != null) {
+            List<MSTile> tiles = getTiles();
+            int index = tileId - 1;
+            if (index < tiles.size()) {
+                MSTile tile = tiles.get(index);
+                if (tile != null) {
                     FragmentManager fm = getFragmentManager();
                     GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
 
@@ -237,9 +237,9 @@ public class GameFragment extends Fragment {
                             Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
                         } else {
                             if (game.getEnableFlagMode()) {
-                                workerFragment.flagCellAsync(cell.getRowIndex(), cell.getColIndex(), !cell.getIsFlagged());
+                                workerFragment.flagTileAsync(tile.getRowIndex(), tile.getColIndex(), !tile.getIsFlagged());
                             } else {
-                                workerFragment.exploreCellAsync(cell.getRowIndex(), cell.getColIndex());
+                                workerFragment.exploreTileAsync(tile.getRowIndex(), tile.getColIndex());
                             }
                         }
                     }
@@ -266,20 +266,20 @@ public class GameFragment extends Fragment {
         return workerFragment != null ? workerFragment.getMines() : 0;
     }
 
-    public ArrayAdapter<MSCell> getArrayAdapterForBoardCells() {
-        return mArrayAdapterForBoardCells;
+    public ArrayAdapter<MSTile> getArrayAdapterForTiles() {
+        return mArrayAdapterForTiles;
     }
 
-    public void setArrayAdapterForBoardCells(ArrayAdapter<MSCell> arrayAdapterForBoardCells) {
-        mArrayAdapterForBoardCells = arrayAdapterForBoardCells;
+    public void setArrayAdapterForTiles(ArrayAdapter<MSTile> arrayAdapterForTiles) {
+        mArrayAdapterForTiles = arrayAdapterForTiles;
     }
 
-    public List<MSCell> getCells() {
-        return mCells;
+    public List<MSTile> getTiles() {
+        return mTiles;
     }
 
-    public void setCells(List<MSCell> cells) {
-        mCells = cells;
+    public void setTiles(List<MSTile> tiles) {
+        mTiles = tiles;
     }
 
     public void onGenerateGameDataPreExecute() {
@@ -292,13 +292,13 @@ public class GameFragment extends Fragment {
         updateViews(result);
     }
 
-    public void onExploreCellPreExecute() {
+    public void onExploreTilePreExecute() {
     }
 
-    public void onExploreCellCancelled() {
+    public void onExploreTileCancelled() {
     }
 
-    public void onExploreCellPostExecute(MSGameState result) {
+    public void onExploreTilePostExecute(MSGameState result) {
         updateViews(result);
     }
 
@@ -331,13 +331,13 @@ public class GameFragment extends Fragment {
     public void onToggleFlagModePostExecute(MSGame result) {
     }
 
-    public void onFlagCellPreExecute() {
+    public void onFlagTilePreExecute() {
     }
 
-    public void onFlagCellCancelled() {
+    public void onFlagTileCancelled() {
     }
 
-    public void onFlagCellPostExecute(MSGameState result) {
+    public void onFlagTilePostExecute(MSGameState result) {
         updateViews(result);
     }
 
@@ -359,7 +359,7 @@ public class GameFragment extends Fragment {
         private ImageView mImageViewUnderlying = null;
         private ImageButton mImageButtonMask = null;
         private ImageButton mImageButtonFlagged = null;
-        private Integer mCellId = null;
+        private Integer mTileId = null;
 
         public GridItemViewHolder(View base) {
             setImageUnderlying((ImageView) base.findViewById(R.id.game__imageview_underlying));
@@ -368,13 +368,13 @@ public class GameFragment extends Fragment {
             getImageButtonMask().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    invokeMove(getCellId());
+                    invokeMove(getTileId());
                 }
             });
             getImageButtonFlagged().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    invokeMove(getCellId());
+                    invokeMove(getTileId());
                 }
             });
         }
@@ -403,12 +403,12 @@ public class GameFragment extends Fragment {
             mImageButtonFlagged = imageButtonFlagged;
         }
 
-        public Integer getCellId() {
-            return mCellId;
+        public Integer getTileId() {
+            return mTileId;
         }
 
-        public void setCellId(Integer cellId) {
-            mCellId = cellId;
+        public void setTileId(Integer tileId) {
+            mTileId = tileId;
         }
     }
 }

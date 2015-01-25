@@ -7,7 +7,7 @@
         android:id="@+id/game__imageview_underlying"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_cell_blank"
+        android:src="@drawable/ic_tile_blank"
         android:contentDescription="@string/default_content_desc"
         android:adjustViewBounds="true" />
 
@@ -15,7 +15,7 @@
         android:id="@+id/game__imagebutton_mask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/selector_cell_mask"
+        android:src="@drawable/selector_tile_mask"
         android:scaleType="fitXY"
         android:padding="0dip"
         android:contentDescription="@string/default_content_desc"
@@ -25,7 +25,7 @@
         android:id="@+id/game__imagebutton_flagged"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/selector_cell_flagged"
+        android:src="@drawable/selector_tile_flagged"
         android:scaleType="fitXY"
         android:padding="0dip"
         android:contentDescription="@string/default_content_desc"

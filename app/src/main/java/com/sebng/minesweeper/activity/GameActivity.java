@@ -196,50 +196,50 @@ public class GameActivity extends MSBaseActivity
     }
 
     @Override
-    public void onExploreCellPreExecute() {
+    public void onExploreTilePreExecute() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onExploreCellPreExecute();
+            gameFragment.onExploreTilePreExecute();
         }
     }
 
     @Override
-    public void onExploreCellCancelled() {
+    public void onExploreTileCancelled() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onExploreCellCancelled();
+            gameFragment.onExploreTileCancelled();
         }
     }
 
     @Override
-    public void onExploreCellPostExecute(MSGameState result) {
+    public void onExploreTilePostExecute(MSGameState result) {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onExploreCellPostExecute(result);
+            gameFragment.onExploreTilePostExecute(result);
         }
     }
 
     @Override
-    public void onFlagCellPreExecute() {
+    public void onFlagTilePreExecute() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onFlagCellPreExecute();
+            gameFragment.onFlagTilePreExecute();
         }
     }
 
     @Override
-    public void onFlagCellCancelled() {
+    public void onFlagTileCancelled() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onFlagCellCancelled();
+            gameFragment.onFlagTileCancelled();
         }
     }
 
     @Override
-    public void onFlagCellPostExecute(MSGameState result) {
+    public void onFlagTilePostExecute(MSGameState result) {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onFlagCellPostExecute(result);
+            gameFragment.onFlagTilePostExecute(result);
         }
     }
 

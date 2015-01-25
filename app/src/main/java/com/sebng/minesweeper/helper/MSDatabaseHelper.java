@@ -9,7 +9,7 @@ import android.util.Pair;
 
 import com.sebng.minesweeper.BuildConfig;
 import com.sebng.minesweeper.MSApplication;
-import com.sebng.minesweeper.model.MSCell;
+import com.sebng.minesweeper.model.MSTile;
 import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.model.MSGameState;
 
@@ -20,7 +20,7 @@ import java.util.Random;
 
 public class MSDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mine_sweeper";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static MSDatabaseHelper mInstance = null;
     private Context mContext;
 
@@ -65,14 +65,14 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                         ", %s real" +
                         ", %s real" +
                         ");",
-                MSCell.DB_TABLE_NAME,
+                MSTile.DB_TABLE_NAME,
                 MSGame.PARAM_KEY_ID,
-                MSCell.PARAM_KEY_ROW_INDEX,
-                MSCell.PARAM_KEY_COL_INDEX,
-                MSCell.PARAM_KEY_IS_EXPLORED,
-                MSCell.PARAM_KEY_IS_FLAGGED,
-                MSCell.PARAM_KEY_HAS_MINE,
-                MSCell.PARAM_KEY_ADJACENT_MINES));
+                MSTile.PARAM_KEY_ROW_INDEX,
+                MSTile.PARAM_KEY_COL_INDEX,
+                MSTile.PARAM_KEY_IS_EXPLORED,
+                MSTile.PARAM_KEY_IS_FLAGGED,
+                MSTile.PARAM_KEY_HAS_MINE,
+                MSTile.PARAM_KEY_ADJACENT_MINES));
     }
 
     @Override
@@ -80,7 +80,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         if (BuildConfig.DEBUG)
             android.util.Log.d(MSApplication.LOG_TAG, "Upgrading database, which will destroy all old data");
         db.execSQL(String.format("drop table if exists %s", MSGame.DB_TABLE_NAME));
-        db.execSQL(String.format("drop table if exists %s", MSCell.DB_TABLE_NAME));
+        db.execSQL(String.format("drop table if exists %s", MSTile.DB_TABLE_NAME));
         onCreate(db);
     }
 
@@ -93,7 +93,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public MSGameState createNewGame(int dimension, int mines) {
-        deleteAllCells();
+        deleteAllTiles();
 
         ContentValues cv = new ContentValues();
         if (loadGame() == null) {
@@ -113,16 +113,16 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         }
         MSGame game = new MSGame(dimension, mines, false, false, false, false, false);
 
-        ArrayList<MSCell> cells = new ArrayList<MSCell>();
+        ArrayList<MSTile> tiles = new ArrayList<MSTile>();
         for (int i = 0, k = 1; i < dimension; i++) {
             for (int j = 0; j < dimension; j++, k++) {
-                MSCell cell = new MSCell(k, i, j, false, false, false, 0);
-                cells.add(cell);
-                insertCell(cell);
+                MSTile tile = new MSTile(k, i, j, false, false, false, 0);
+                tiles.add(tile);
+                insertTile(tile);
             }
         }
 
-        return new MSGameState(game, cells);
+        return new MSGameState(game, tiles);
     }
 
     public void updateGame(MSGame game) {
@@ -180,122 +180,122 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
     public MSGameState validateGame(MSGameState gameState) {
         MSGame game = gameState.getGame();
         game.setHasEnded(true);
-        game.setHasWon(getNumberOfUnexploredCells() == game.getMines());
+        game.setHasWon(getNumberOfUnexploredTiles() == game.getMines());
         updateGame(game);
         return gameState;
     }
 
-    public void deleteAllCells() {
-        getWritableDatabase().delete(MSCell.DB_TABLE_NAME, null, null);
+    public void deleteAllTiles() {
+        getWritableDatabase().delete(MSTile.DB_TABLE_NAME, null, null);
     }
 
-    public MSGameState resetCells(int dimension, int mines, int rowIndexFirstMove, int colIndexFirstMove) {
-        List<MSCell> cells = loadCells();
+    public MSGameState resetTiles(int dimension, int mines, int rowIndexFirstMove, int colIndexFirstMove) {
+        List<MSTile> tiles = loadTiles();
 
-        Hashtable<Integer, Boolean> indicesOfMineFreeCells = new Hashtable<>();
+        Hashtable<Integer, Boolean> indicesOfMineFreeTiles = new Hashtable<>();
         for (int m = -1; m <= 1; m++) {
             for (int n = -1; n <= 1; n++) {
-                int rowIndexMineFreeCell = rowIndexFirstMove + m;
-                int colIndexMineFreeCell = colIndexFirstMove + n;
-                if (rowIndexMineFreeCell >= 0 && rowIndexMineFreeCell < dimension && colIndexMineFreeCell >= 0 && colIndexMineFreeCell < dimension) {
-                    int indexMineFreeCell = rowIndexMineFreeCell * dimension + colIndexMineFreeCell;
-                    indicesOfMineFreeCells.put(indexMineFreeCell, true);
+                int rowIndexMineFreeTile = rowIndexFirstMove + m;
+                int colIndexMineFreeTile = colIndexFirstMove + n;
+                if (rowIndexMineFreeTile >= 0 && rowIndexMineFreeTile < dimension && colIndexMineFreeTile >= 0 && colIndexMineFreeTile < dimension) {
+                    int indexMineFreeTile = rowIndexMineFreeTile * dimension + colIndexMineFreeTile;
+                    indicesOfMineFreeTiles.put(indexMineFreeTile, true);
                 }
             }
         }
 
         Hashtable<Integer, Boolean> indicesOfMines = new Hashtable<>();
-        int totalCells = dimension * dimension;
+        int totalTiles = dimension * dimension;
         Random random = new Random();
         do {
-            int randomIndex = random.nextInt(totalCells);
-            if (!indicesOfMineFreeCells.containsKey(randomIndex) && !indicesOfMines.containsKey(randomIndex)) {
+            int randomIndex = random.nextInt(totalTiles);
+            if (!indicesOfMineFreeTiles.containsKey(randomIndex) && !indicesOfMines.containsKey(randomIndex)) {
                 indicesOfMines.put(randomIndex, true);
             }
         } while (indicesOfMines.size() < mines);
 
         int i, j, k = 0;
 
-        for (MSCell cell : cells) {
+        for (MSTile tile : tiles) {
             i = k / dimension;
             j = k % dimension;
             if (indicesOfMines.containsKey(k)) {
-                cell.setHasMine(true);
+                tile.setHasMine(true);
             } else {
                 int adjacentMines = 0;
                 for (int m = -1; m <= 1; m++) {
                     for (int n = -1; n <= 1; n++) {
                         if (m != 0 || n != 0) {
-                            int rowIndexOfAdjacentCell = i + m;
-                            int colIndexOfAdjacentCell = j + n;
-                            if (rowIndexOfAdjacentCell >= 0 && rowIndexOfAdjacentCell < dimension && colIndexOfAdjacentCell >= 0 && colIndexOfAdjacentCell < dimension) {
-                                int indexAdjacentCell = rowIndexOfAdjacentCell * dimension + colIndexOfAdjacentCell;
-                                if (indicesOfMines.containsKey(indexAdjacentCell)) {
+                            int rowIndexOfAdjacentTile = i + m;
+                            int colIndexOfAdjacentTile = j + n;
+                            if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
+                                int indexAdjacentTile = rowIndexOfAdjacentTile * dimension + colIndexOfAdjacentTile;
+                                if (indicesOfMines.containsKey(indexAdjacentTile)) {
                                     adjacentMines++;
                                 }
                             }
                         }
                     }
                 }
-                cell.setAdjacentMines(adjacentMines);
+                tile.setAdjacentMines(adjacentMines);
             }
             k++;
-            updateCell(cell);
+            updateTile(tile);
         }
         MSGame game = loadGame();
         game.setHasStarted(true);
         updateGame(game);
-        return exploreCell(new MSGameState(game, cells), rowIndexFirstMove, colIndexFirstMove);
+        return exploreTile(new MSGameState(game, tiles), rowIndexFirstMove, colIndexFirstMove);
     }
 
-    public List<Pair<Integer, Integer>> revealBlankCells(MSGameState gameState, List<Pair<Integer, Integer>> coordinatesOfNewBlankCells) {
+    public List<Pair<Integer, Integer>> revealBlankTiles(MSGameState gameState, List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles) {
         int dimension = gameState.getGame().getDimension();
-        List<MSCell> cells = gameState.getCells();
-        List<Pair<Integer, Integer>> coordinatesOfAdditionalNewBlankCell = new ArrayList<>();
-        for (Pair<Integer, Integer> coordinatesOfBlankCell : coordinatesOfNewBlankCells) {
+        List<MSTile> tiles = gameState.getTiles();
+        List<Pair<Integer, Integer>> coordinatesOfAdditionalNewBlankTiles = new ArrayList<>();
+        for (Pair<Integer, Integer> coordinatesOfBlankTile : coordinatesOfNewBlankTiles) {
             for (int m = -1; m <= 1; m++) {
                 for (int n = -1; n <= 1; n++) {
                     if ((m == 0 && n != 0) || (m != 0 && n == 0)) {
-                        int rowIndexOfAdjacentCell = coordinatesOfBlankCell.first + m;
-                        int colIndexOfAdjacentCell = coordinatesOfBlankCell.second + n;
-                        if (rowIndexOfAdjacentCell >= 0 && rowIndexOfAdjacentCell < dimension && colIndexOfAdjacentCell >= 0 && colIndexOfAdjacentCell < dimension) {
-                            int indexAdjacentCell = rowIndexOfAdjacentCell * dimension + colIndexOfAdjacentCell;
-                            MSCell adjacentCell = cells.get(indexAdjacentCell);
-                            if (!adjacentCell.getIsExplored() && !adjacentCell.getHasMine()) {
-                                adjacentCell.setIsExplored(true);
-                                if (adjacentCell.getAdjacentMines() == 0) {
-                                    coordinatesOfAdditionalNewBlankCell.add(new Pair<>(adjacentCell.getRowIndex(), adjacentCell.getColIndex()));
+                        int rowIndexOfAdjacentTile = coordinatesOfBlankTile.first + m;
+                        int colIndexOfAdjacentTile = coordinatesOfBlankTile.second + n;
+                        if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
+                            int indexAdjacentTile = rowIndexOfAdjacentTile * dimension + colIndexOfAdjacentTile;
+                            MSTile adjacentTile = tiles.get(indexAdjacentTile);
+                            if (!adjacentTile.getIsExplored() && !adjacentTile.getHasMine()) {
+                                adjacentTile.setIsExplored(true);
+                                if (adjacentTile.getAdjacentMines() == 0) {
+                                    coordinatesOfAdditionalNewBlankTiles.add(new Pair<>(adjacentTile.getRowIndex(), adjacentTile.getColIndex()));
                                 }
-                                updateCell(adjacentCell);
+                                updateTile(adjacentTile);
                             }
                         }
                     }
                 }
             }
         }
-        return coordinatesOfAdditionalNewBlankCell;
+        return coordinatesOfAdditionalNewBlankTiles;
     }
 
-    public MSGameState exploreCell(MSGameState gameState, int rowIndexMove, int colIndexMove) {
+    public MSGameState exploreTile(MSGameState gameState, int rowIndexMove, int colIndexMove) {
         if (gameState != null) {
             MSGame game = gameState.getGame();
             if (game != null && !game.getHasEnded()) {
-                List<MSCell> cells = gameState.getCells();
-                if (cells != null && !cells.isEmpty()) {
-                    MSCell cell = cells.get(rowIndexMove * game.getDimension() + colIndexMove);
-                    if (cell != null) {
-                        cell.setIsExplored(true);
-                        updateCell(cell);
-                        if (cell.getHasMine()) {
+                List<MSTile> tiles = gameState.getTiles();
+                if (tiles != null && !tiles.isEmpty()) {
+                    MSTile tile = tiles.get(rowIndexMove * game.getDimension() + colIndexMove);
+                    if (tile != null) {
+                        tile.setIsExplored(true);
+                        updateTile(tile);
+                        if (tile.getHasMine()) {
                             game.setHasEnded(true);
                             game.setHasWon(false);
                             updateGame(game);
-                        } else if (cell.getAdjacentMines() == 0) {
-                            List<Pair<Integer, Integer>> coordinatesOfNewBlankCells = new ArrayList<>();
-                            coordinatesOfNewBlankCells.add(new Pair<>(rowIndexMove, colIndexMove));
+                        } else if (tile.getAdjacentMines() == 0) {
+                            List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles = new ArrayList<>();
+                            coordinatesOfNewBlankTiles.add(new Pair<>(rowIndexMove, colIndexMove));
                             do {
-                                coordinatesOfNewBlankCells = revealBlankCells(gameState, coordinatesOfNewBlankCells);
-                            } while (!coordinatesOfNewBlankCells.isEmpty());
+                                coordinatesOfNewBlankTiles = revealBlankTiles(gameState, coordinatesOfNewBlankTiles);
+                            } while (!coordinatesOfNewBlankTiles.isEmpty());
                         }
                     }
                 }
@@ -304,16 +304,16 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return gameState;
     }
 
-    public MSGameState flagCell(MSGameState gameState, int rowIndexMove, int colIndexMove, boolean bFlag) {
+    public MSGameState flagTile(MSGameState gameState, int rowIndexMove, int colIndexMove, boolean bFlag) {
         if (gameState != null) {
             MSGame game = gameState.getGame();
             if (game != null && !game.getHasEnded() && game.getEnableFlagMode()) {
-                List<MSCell> cells = gameState.getCells();
-                if (cells != null && !cells.isEmpty()) {
-                    MSCell cell = cells.get(rowIndexMove * game.getDimension() + colIndexMove);
-                    if (cell != null && !cell.getIsExplored()) {
-                        cell.setIsFlagged(bFlag);
-                        updateCell(cell);
+                List<MSTile> tiles = gameState.getTiles();
+                if (tiles != null && !tiles.isEmpty()) {
+                    MSTile tile = tiles.get(rowIndexMove * game.getDimension() + colIndexMove);
+                    if (tile != null && !tile.getIsExplored()) {
+                        tile.setIsFlagged(bFlag);
+                        updateTile(tile);
                     }
                 }
             }
@@ -321,8 +321,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return gameState;
     }
 
-    public List<MSCell> loadCells() {
-        ArrayList<MSCell> cells = new ArrayList<MSCell>();
+    public List<MSTile> loadTiles() {
+        ArrayList<MSTile> tiles = new ArrayList<>();
         Cursor result = getReadableDatabase()
                 .rawQuery(String.format("select %s" +
                                 ",  %s" +
@@ -332,16 +332,16 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                                 ", %s" +
                                 ", %s" +
                                 " from %s",
-                        MSCell.PARAM_KEY_ID,
-                        MSCell.PARAM_KEY_ROW_INDEX,
-                        MSCell.PARAM_KEY_COL_INDEX,
-                        MSCell.PARAM_KEY_IS_EXPLORED,
-                        MSCell.PARAM_KEY_IS_FLAGGED,
-                        MSCell.PARAM_KEY_HAS_MINE,
-                        MSCell.PARAM_KEY_ADJACENT_MINES,
-                        MSCell.DB_TABLE_NAME), null);
+                        MSTile.PARAM_KEY_ID,
+                        MSTile.PARAM_KEY_ROW_INDEX,
+                        MSTile.PARAM_KEY_COL_INDEX,
+                        MSTile.PARAM_KEY_IS_EXPLORED,
+                        MSTile.PARAM_KEY_IS_FLAGGED,
+                        MSTile.PARAM_KEY_HAS_MINE,
+                        MSTile.PARAM_KEY_ADJACENT_MINES,
+                        MSTile.DB_TABLE_NAME), null);
         while (result.moveToNext()) {
-            cells.add(new MSCell(
+            tiles.add(new MSTile(
                     result.getInt(0),
                     result.getInt(1),
                     result.getInt(2),
@@ -352,15 +352,15 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
             ));
         }
         result.close();
-        return cells;
+        return tiles;
     }
 
-    public int getNumberOfUnexploredCells() {
+    public int getNumberOfUnexploredTiles() {
         int num = 0;
         Cursor result = getReadableDatabase()
                 .rawQuery(String.format("select 1 from %s where %s = 0",
-                        MSCell.DB_TABLE_NAME,
-                        MSCell.PARAM_KEY_IS_EXPLORED), null);
+                        MSTile.DB_TABLE_NAME,
+                        MSTile.PARAM_KEY_IS_EXPLORED), null);
         while (result.moveToNext()) {
             num++;
         }
@@ -368,29 +368,29 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return num;
     }
 
-    public void insertOrUpdateCell(MSCell cell, boolean bUpdate) {
-        if (cell != null) {
+    public void insertOrUpdateTile(MSTile tile, boolean bUpdate) {
+        if (tile != null) {
             ContentValues cv = new ContentValues();
-            cv.put(MSCell.PARAM_KEY_ID, cell.getId());
-            cv.put(MSCell.PARAM_KEY_ROW_INDEX, cell.getRowIndex());
-            cv.put(MSCell.PARAM_KEY_COL_INDEX, cell.getColIndex());
-            cv.put(MSCell.PARAM_KEY_IS_EXPLORED, cell.getIsExplored());
-            cv.put(MSCell.PARAM_KEY_IS_FLAGGED, cell.getIsFlagged());
-            cv.put(MSCell.PARAM_KEY_HAS_MINE, cell.getHasMine());
-            cv.put(MSCell.PARAM_KEY_ADJACENT_MINES, cell.getAdjacentMines());
+            cv.put(MSTile.PARAM_KEY_ID, tile.getId());
+            cv.put(MSTile.PARAM_KEY_ROW_INDEX, tile.getRowIndex());
+            cv.put(MSTile.PARAM_KEY_COL_INDEX, tile.getColIndex());
+            cv.put(MSTile.PARAM_KEY_IS_EXPLORED, tile.getIsExplored());
+            cv.put(MSTile.PARAM_KEY_IS_FLAGGED, tile.getIsFlagged());
+            cv.put(MSTile.PARAM_KEY_HAS_MINE, tile.getHasMine());
+            cv.put(MSTile.PARAM_KEY_ADJACENT_MINES, tile.getAdjacentMines());
             if (bUpdate) {
-                getWritableDatabase().update(MSCell.DB_TABLE_NAME, cv, MSCell.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(cell.getId())});
+                getWritableDatabase().update(MSTile.DB_TABLE_NAME, cv, MSTile.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(tile.getId())});
             } else {
-                getWritableDatabase().insert(MSCell.DB_TABLE_NAME, MSCell.PARAM_KEY_ID, cv);
+                getWritableDatabase().insert(MSTile.DB_TABLE_NAME, MSTile.PARAM_KEY_ID, cv);
             }
         }
     }
 
-    public void insertCell(MSCell cell) {
-        insertOrUpdateCell(cell, false);
+    public void insertTile(MSTile tile) {
+        insertOrUpdateTile(tile, false);
     }
 
-    public void updateCell(MSCell cell) {
-        insertOrUpdateCell(cell, true);
+    public void updateTile(MSTile tile) {
+        insertOrUpdateTile(tile, true);
     }
 }

@@ -17,8 +17,8 @@ public class GameWorkerFragment extends Fragment {
     protected static final String ARG_LOAD_GAME = "arg.LOAD_GAME";
     protected OnWorkerFragmentCallbacks mCallbacks = null;
     protected MSGenerateGameDataTask mGenerateGameDataTask = null;
-    protected MSExploreCellTask mExploreCellTask = null;
-    protected MSFlagCellTask mFlagCellTask = null;
+    protected MSExploreTileTask mExploreTileTask = null;
+    protected MSFlagTileTask mFlagTileTask = null;
     protected MSValidateGameTask mValidateGameTask = null;
     protected MSToggleCheatTask mToggleCheatTask = null;
     protected MSToggleFlagModeTask mToggleFlagModeTask = null;
@@ -57,7 +57,7 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGameState createNewGame(int dimension, int mines) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        databaseHelper.deleteAllCells();
+        databaseHelper.deleteAllTiles();
         return databaseHelper.createNewGame(dimension, mines);
     }
 
@@ -73,51 +73,51 @@ public class GameWorkerFragment extends Fragment {
         mGenerateGameDataTask.execute(params);
     }
 
-    public MSGameState exploreCell(int rowIndex, int colIndex) {
+    public MSGameState exploreTile(int rowIndex, int colIndex) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         MSGame game = databaseHelper.loadGame();
         if (!game.getHasStarted()) {
-            return databaseHelper.resetCells(game.getDimension(), game.getMines(), rowIndex, colIndex);
+            return databaseHelper.resetTiles(game.getDimension(), game.getMines(), rowIndex, colIndex);
         } else {
-            return databaseHelper.exploreCell(new MSGameState(game, databaseHelper.loadCells()), rowIndex, colIndex);
+            return databaseHelper.exploreTile(new MSGameState(game, databaseHelper.loadTiles()), rowIndex, colIndex);
         }
     }
 
-    public MSGameState flagCell(int rowIndex, int colIndex, boolean bFlag) {
+    public MSGameState flagTile(int rowIndex, int colIndex, boolean bFlag) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         MSGame game = databaseHelper.loadGame();
-        return databaseHelper.flagCell(new MSGameState(game, databaseHelper.loadCells()), rowIndex, colIndex, bFlag);
+        return databaseHelper.flagTile(new MSGameState(game, databaseHelper.loadTiles()), rowIndex, colIndex, bFlag);
     }
 
-    public void exploreCellAsync(int rowIndex, int colIndex) {
-        if (mExploreCellTask != null)
+    public void exploreTileAsync(int rowIndex, int colIndex) {
+        if (mExploreTileTask != null)
             return;
 
-        mExploreCellTask = new MSExploreCellTask();
+        mExploreTileTask = new MSExploreTileTask();
         Object[] params = {
                 rowIndex,
                 colIndex
         };
-        mExploreCellTask.execute(params);
+        mExploreTileTask.execute(params);
     }
 
-    public void flagCellAsync(int rowIndex, int colIndex, boolean bFlag) {
-        if (mFlagCellTask != null)
+    public void flagTileAsync(int rowIndex, int colIndex, boolean bFlag) {
+        if (mFlagTileTask != null)
             return;
 
-        mFlagCellTask = new MSFlagCellTask();
+        mFlagTileTask = new MSFlagTileTask();
         Object[] params = {
                 rowIndex,
                 colIndex,
                 bFlag
         };
-        mFlagCellTask.execute(params);
+        mFlagTileTask.execute(params);
     }
 
     public MSGameState validateGame() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         MSGame game = databaseHelper.loadGame();
-        MSGameState gameState = new MSGameState(game, databaseHelper.loadCells());
+        MSGameState gameState = new MSGameState(game, databaseHelper.loadTiles());
         if (game.getHasEnded()) {
             return gameState;
         } else {
@@ -164,8 +164,8 @@ public class GameWorkerFragment extends Fragment {
 
     public void cancelAsyncTasks() {
         cancelGenerateGameData();
-        cancelExploreCell();
-        cancelFlagCell();
+        cancelExploreTile();
+        cancelFlagTile();
         cancelValidateGame();
         cancelToggleCheat();
         cancelToggleFlagMode();
@@ -178,17 +178,17 @@ public class GameWorkerFragment extends Fragment {
         }
     }
 
-    public void cancelExploreCell() {
-        if (mExploreCellTask != null &&
-                !mExploreCellTask.isCancelled()) {
-            mExploreCellTask.cancel(true);
+    public void cancelExploreTile() {
+        if (mExploreTileTask != null &&
+                !mExploreTileTask.isCancelled()) {
+            mExploreTileTask.cancel(true);
         }
     }
 
-    public void cancelFlagCell() {
-        if (mFlagCellTask != null &&
-                !mFlagCellTask.isCancelled()) {
-            mFlagCellTask.cancel(true);
+    public void cancelFlagTile() {
+        if (mFlagTileTask != null &&
+                !mFlagTileTask.isCancelled()) {
+            mFlagTileTask.cancel(true);
         }
     }
 
@@ -251,17 +251,17 @@ public class GameWorkerFragment extends Fragment {
 
         void onGenerateGameDataPostExecute(MSGameState result);
 
-        void onExploreCellPreExecute();
+        void onExploreTilePreExecute();
 
-        void onExploreCellCancelled();
+        void onExploreTileCancelled();
 
-        void onExploreCellPostExecute(MSGameState result);
+        void onExploreTilePostExecute(MSGameState result);
 
-        void onFlagCellPreExecute();
+        void onFlagTilePreExecute();
 
-        void onFlagCellCancelled();
+        void onFlagTileCancelled();
 
-        void onFlagCellPostExecute(MSGameState result);
+        void onFlagTilePostExecute(MSGameState result);
 
         void onValidateGamePreExecute();
 
@@ -313,10 +313,10 @@ public class GameWorkerFragment extends Fragment {
         }
     }
 
-    public class MSExploreCellTask extends AsyncTask<Object, Void, MSGameState> {
+    public class MSExploreTileTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
-            if (mCallbacks != null) mCallbacks.onExploreCellPreExecute();
+            if (mCallbacks != null) mCallbacks.onExploreTilePreExecute();
         }
 
         @Override
@@ -325,7 +325,7 @@ public class GameWorkerFragment extends Fragment {
                 Integer rowIndex = (Integer) params[0];
                 Integer colIndex = (Integer) params[1];
                 if (rowIndex != null && colIndex != null) {
-                    return exploreCell(rowIndex, colIndex);
+                    return exploreTile(rowIndex, colIndex);
                 }
             }
             return null;
@@ -333,21 +333,21 @@ public class GameWorkerFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MSGameState result) {
-            if (mCallbacks != null) mCallbacks.onExploreCellPostExecute(result);
-            mExploreCellTask = null;
+            if (mCallbacks != null) mCallbacks.onExploreTilePostExecute(result);
+            mExploreTileTask = null;
         }
 
         @Override
         protected void onCancelled() {
-            if (mCallbacks != null) mCallbacks.onExploreCellCancelled();
-            mExploreCellTask = null;
+            if (mCallbacks != null) mCallbacks.onExploreTileCancelled();
+            mExploreTileTask = null;
         }
     }
 
-    public class MSFlagCellTask extends AsyncTask<Object, Void, MSGameState> {
+    public class MSFlagTileTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
-            if (mCallbacks != null) mCallbacks.onFlagCellPreExecute();
+            if (mCallbacks != null) mCallbacks.onFlagTilePreExecute();
         }
 
         @Override
@@ -357,7 +357,7 @@ public class GameWorkerFragment extends Fragment {
                 Integer colIndex = (Integer) params[1];
                 Boolean bFlag = (Boolean) params[2];
                 if (rowIndex != null && colIndex != null) {
-                    return flagCell(rowIndex, colIndex, bFlag);
+                    return flagTile(rowIndex, colIndex, bFlag);
                 }
             }
             return null;
@@ -365,14 +365,14 @@ public class GameWorkerFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MSGameState result) {
-            if (mCallbacks != null) mCallbacks.onFlagCellPostExecute(result);
-            mFlagCellTask = null;
+            if (mCallbacks != null) mCallbacks.onFlagTilePostExecute(result);
+            mFlagTileTask = null;
         }
 
         @Override
         protected void onCancelled() {
-            if (mCallbacks != null) mCallbacks.onFlagCellCancelled();
-            mFlagCellTask = null;
+            if (mCallbacks != null) mCallbacks.onFlagTileCancelled();
+            mFlagTileTask = null;
         }
     }
 
@@ -415,7 +415,7 @@ public class GameWorkerFragment extends Fragment {
                 game.setEnableCheat(bEnable);
                 databaseHelper.updateGame(game);
             }
-            return new MSGameState(game, databaseHelper.loadCells());
+            return new MSGameState(game, databaseHelper.loadTiles());
         }
 
         @Override
