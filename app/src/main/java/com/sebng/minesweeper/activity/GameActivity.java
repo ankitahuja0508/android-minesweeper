@@ -114,6 +114,12 @@ public class GameActivity extends MSBaseActivity
                 return true;
             case R.id.game__action_reset:
                 //TODO: show confirmation prompt
+                if (workerFragment != null) {
+                    MSGame game = workerFragment.getGame();
+                    if (game != null) {
+                        workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
+                    }
+                }
                 return true;
             case R.id.game__action_flag_mode:
                 item.setChecked(!item.isChecked());
@@ -188,6 +194,7 @@ public class GameActivity extends MSBaseActivity
                 }
             }
         }
+        invalidateOptionsMenu();
 
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
