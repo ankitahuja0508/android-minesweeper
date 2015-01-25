@@ -3,6 +3,7 @@
 
     <string name="app_name">Mine Sweeper</string>
     <string name="default_content_desc"></string>
+    <string name="dialog___button_cancel">Cancel</string>
     <string name="action_about">About</string>
     <string name="action_help">Help</string>
     <string name="action_validate">Validate</string>
@@ -22,5 +23,8 @@
     <string name="game__ended_and_lost">The game has ended. You have lost.</string>
     <string name="game__validate_disallowed_first_move_required">You can only validate after you have made your first move.</string>
     <string name="game__cheat_shown_only_after_first_move">Cheat will only take effect after you have made your first move.</string>
+    <string name="game__validate_confirmation_dialog___title">Validate game</string>
+    <string name="game__validate_confirmation_dialog___prompt">Are you sure you want to validate?</string>
+    <string name="game__validate_confirmation_dialog___button_positive">Validate</string>
 
 </resources>

@@ -1,7 +1,9 @@
 package com.sebng.minesweeper.activity;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -98,14 +100,28 @@ public class GameActivity extends MSBaseActivity
                 onBackPressed();
                 return true;
             case R.id.game__action_validate:
-                //TODO: show confirmation prompt
                 if (workerFragment != null) {
                     MSGame game = workerFragment.getGame();
                     if (game != null) {
                         if (game.getHasEnded()) {
                             Toast.makeText(this, getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
                         } else if (game.getHasStarted()) {
-                            workerFragment.validateGameAsync();
+                            new AlertDialog.Builder(this)
+                                    .setTitle(getString(R.string.game__validate_confirmation_dialog___title))
+                                    .setMessage(getString(R.string.game__validate_confirmation_dialog___prompt))
+                                    .setPositiveButton(getString(R.string.game__validate_confirmation_dialog___button_positive), new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            FragmentManager fm = getFragmentManager();
+                                            GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+                                            if (mWorkerFragment != null) {
+                                                workerFragment.validateGameAsync();
+                                            }
+                                        }
+
+                                    })
+                                    .setNegativeButton(getString(R.string.dialog___button_cancel), null)
+                                    .show();
                         } else {
                             Toast.makeText(this, getString(R.string.game__validate_disallowed_first_move_required), Toast.LENGTH_LONG).show();
                         }
