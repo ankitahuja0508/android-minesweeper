@@ -131,7 +131,7 @@ public class GameActivity extends MSBaseActivity
                 if (workerFragment != null) {
                     MSGame game = workerFragment.getGame();
                     if (game != null) {
-                        workerFragment.toggleCheatModeAsync(!game.getEnableCheat());
+                        workerFragment.toggleCheatAsync(!game.getEnableCheat());
                         if (!game.getHasStarted()) {
                             Toast.makeText(this, getString(R.string.game__cheat_shown_only_after_first_move), Toast.LENGTH_LONG).show();
                         }
@@ -268,26 +268,26 @@ public class GameActivity extends MSBaseActivity
     }
 
     @Override
-    public void onToggleCheatModePreExecute() {
+    public void onToggleCheatPreExecute() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onToggleCheatModePreExecute();
+            gameFragment.onToggleCheatPreExecute();
         }
     }
 
     @Override
-    public void onToggleCheatModeCancelled() {
+    public void onToggleCheatCancelled() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onToggleCheatModeCancelled();
+            gameFragment.onToggleCheatCancelled();
         }
     }
 
     @Override
-    public void onToggleCheatModePostExecute(MSGameState result) {
+    public void onToggleCheatPostExecute(MSGameState result) {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onToggleCheatModePostExecute(result);
+            gameFragment.onToggleCheatPostExecute(result);
         }
     }
 

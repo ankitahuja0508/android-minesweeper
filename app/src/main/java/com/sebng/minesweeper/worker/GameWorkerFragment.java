@@ -133,7 +133,7 @@ public class GameWorkerFragment extends Fragment {
         mValidateGameTask.execute();
     }
 
-    public void toggleCheatModeAsync(boolean bEnable) {
+    public void toggleCheatAsync(boolean bEnable) {
         if (mToggleCheatTask != null)
             return;
 
@@ -269,11 +269,11 @@ public class GameWorkerFragment extends Fragment {
 
         void onValidateGamePostExecute(MSGameState result);
 
-        void onToggleCheatModePreExecute();
+        void onToggleCheatPreExecute();
 
-        void onToggleCheatModeCancelled();
+        void onToggleCheatCancelled();
 
-        void onToggleCheatModePostExecute(MSGameState result);
+        void onToggleCheatPostExecute(MSGameState result);
 
         void onToggleFlagModePreExecute();
 
@@ -403,7 +403,7 @@ public class GameWorkerFragment extends Fragment {
     public class MSToggleCheatTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
-            if (mCallbacks != null) mCallbacks.onToggleCheatModePreExecute();
+            if (mCallbacks != null) mCallbacks.onToggleCheatPreExecute();
         }
 
         @Override
@@ -420,13 +420,13 @@ public class GameWorkerFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MSGameState result) {
-            if (mCallbacks != null) mCallbacks.onToggleCheatModePostExecute(result);
+            if (mCallbacks != null) mCallbacks.onToggleCheatPostExecute(result);
             mToggleCheatTask = null;
         }
 
         @Override
         protected void onCancelled() {
-            if (mCallbacks != null) mCallbacks.onToggleCheatModeCancelled();
+            if (mCallbacks != null) mCallbacks.onToggleCheatCancelled();
             mToggleCheatTask = null;
         }
     }

@@ -312,13 +312,13 @@ public class GameFragment extends Fragment {
         updateViews(result);
     }
 
-    public void onToggleCheatModePreExecute() {
+    public void onToggleCheatPreExecute() {
     }
 
-    public void onToggleCheatModeCancelled() {
+    public void onToggleCheatCancelled() {
     }
 
-    public void onToggleCheatModePostExecute(MSGameState result) {
+    public void onToggleCheatPostExecute(MSGameState result) {
         updateViews(result);
     }
 
