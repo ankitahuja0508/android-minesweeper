@@ -92,7 +92,9 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         mContext = context;
     }
 
-    public MSGame createNewGame(int dimension, int mines) {
+    public MSGameState createNewGame(int dimension, int mines) {
+        deleteAllCells();
+
         ContentValues cv = new ContentValues();
         if (loadGame() == null) {
             cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE); // since this app only supports 1 game at the moment, the id of game will be fixed
@@ -109,7 +111,18 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         } else {
             getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
         }
-        return new MSGame(dimension, mines, false, false, false, false, false);
+        MSGame game = new MSGame(dimension, mines, false, false, false, false, false);
+
+        ArrayList<MSCell> cells = new ArrayList<MSCell>();
+        for (int i = 0, k = 1; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++, k++) {
+                MSCell cell = new MSCell(k, i, j, false, false, false, 0);
+                cells.add(cell);
+                insertCell(cell);
+            }
+        }
+
+        return new MSGameState(game, cells);
     }
 
     public void updateGame(MSGame game) {
@@ -177,8 +190,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public MSGameState resetCells(int dimension, int mines, int rowIndexFirstMove, int colIndexFirstMove) {
-        deleteAllCells();
-        List<MSCell> cells = generateCells(dimension, mines);
+        List<MSCell> cells = loadCells();
 
         Hashtable<Integer, Boolean> indicesOfMineFreeCells = new Hashtable<>();
         for (int m = -1; m <= 1; m++) {
@@ -228,7 +240,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
                 cell.setAdjacentMines(adjacentMines);
             }
             k++;
-            insertCell(cell);
+            updateCell(cell);
         }
         MSGame game = loadGame();
         game.setHasStarted(true);
@@ -307,17 +319,6 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
             }
         }
         return gameState;
-    }
-
-    public List<MSCell> generateCells(int dimension, int mines) {
-        ArrayList<MSCell> cells = new ArrayList<MSCell>();
-        for (int i = 0, k = 1; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++, k++) {
-                MSCell cell = new MSCell(k, i, j, false, false, false, 0);
-                cells.add(cell);
-            }
-        }
-        return cells;
     }
 
     public List<MSCell> loadCells() {

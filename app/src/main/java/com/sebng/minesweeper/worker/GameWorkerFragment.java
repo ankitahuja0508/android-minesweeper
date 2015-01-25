@@ -55,7 +55,7 @@ public class GameWorkerFragment extends Fragment {
         }
     }
 
-    public MSGame createNewGame(int dimension, int mines) {
+    public MSGameState createNewGame(int dimension, int mines) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         databaseHelper.deleteAllCells();
         return databaseHelper.createNewGame(dimension, mines);
@@ -249,7 +249,7 @@ public class GameWorkerFragment extends Fragment {
 
         void onGenerateGameDataCancelled();
 
-        void onGenerateGameDataPostExecute(MSGame result);
+        void onGenerateGameDataPostExecute(MSGameState result);
 
         void onExploreCellPreExecute();
 
@@ -273,7 +273,7 @@ public class GameWorkerFragment extends Fragment {
 
         void onToggleCheatModeCancelled();
 
-        void onToggleCheatModePostExecute(MSGame result);
+        void onToggleCheatModePostExecute(MSGameState result);
 
         void onToggleFlagModePreExecute();
 
@@ -282,14 +282,14 @@ public class GameWorkerFragment extends Fragment {
         void onToggleFlagModePostExecute(MSGame result);
     }
 
-    public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGame> {
+    public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
             if (mCallbacks != null) mCallbacks.onGenerateGameDataPreExecute();
         }
 
         @Override
-        protected MSGame doInBackground(Object... params) {
+        protected MSGameState doInBackground(Object... params) {
             if (params != null && params.length == 2) {
                 Integer dimension = (Integer) params[0];
                 Integer mines = (Integer) params[1];
@@ -301,7 +301,7 @@ public class GameWorkerFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(MSGame result) {
+        protected void onPostExecute(MSGameState result) {
             if (mCallbacks != null) mCallbacks.onGenerateGameDataPostExecute(result);
             mGenerateGameDataTask = null;
         }
@@ -400,26 +400,26 @@ public class GameWorkerFragment extends Fragment {
         }
     }
 
-    public class MSToggleCheatTask extends AsyncTask<Object, Void, MSGame> {
+    public class MSToggleCheatTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
             if (mCallbacks != null) mCallbacks.onToggleCheatModePreExecute();
         }
 
         @Override
-        protected MSGame doInBackground(Object... params) {
+        protected MSGameState doInBackground(Object... params) {
+            MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
             MSGame game = getGame();
             if (params != null && params.length == 1) {
                 Boolean bEnable = (Boolean) params[0];
                 game.setEnableCheat(bEnable);
-                MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
                 databaseHelper.updateGame(game);
             }
-            return game;
+            return new MSGameState(game, databaseHelper.loadCells());
         }
 
         @Override
-        protected void onPostExecute(MSGame result) {
+        protected void onPostExecute(MSGameState result) {
             if (mCallbacks != null) mCallbacks.onToggleCheatModePostExecute(result);
             mToggleCheatTask = null;
         }

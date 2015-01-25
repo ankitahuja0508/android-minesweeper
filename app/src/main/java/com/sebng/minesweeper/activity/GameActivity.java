@@ -120,13 +120,7 @@ public class GameActivity extends MSBaseActivity
                 if (workerFragment != null) {
                     MSGame game = workerFragment.getGame();
                     if (game != null) {
-                        if (game.getHasEnded()) {
-                            Toast.makeText(this, getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
-                        } else if (game.getHasStarted()) {
-                            workerFragment.toggleFlagModeAsync(!game.getEnableFlagMode());
-                        } else {
-                            Toast.makeText(this, getString(R.string.game__flag_mode_disallowed_first_move_required), Toast.LENGTH_LONG).show();
-                        }
+                        workerFragment.toggleFlagModeAsync(!game.getEnableFlagMode());
                     }
                 }
                 return true;
@@ -184,10 +178,15 @@ public class GameActivity extends MSBaseActivity
     }
 
     @Override
-    public void onGenerateGameDataPostExecute(MSGame result) {
+    public void onGenerateGameDataPostExecute(MSGameState result) {
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
-            updateActionBarTitle(actionBar, result.getDimension(), result.getMines());
+            if (result != null) {
+                MSGame game = result.getGame();
+                if (game != null) {
+                    updateActionBarTitle(actionBar, game.getDimension(), game.getMines());
+                }
+            }
         }
 
         GameFragment gameFragment = getGameFragment();
@@ -285,7 +284,7 @@ public class GameActivity extends MSBaseActivity
     }
 
     @Override
-    public void onToggleCheatModePostExecute(MSGame result) {
+    public void onToggleCheatModePostExecute(MSGameState result) {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onToggleCheatModePostExecute(result);

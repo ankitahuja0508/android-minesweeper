@@ -208,9 +208,6 @@ public class GameFragment extends Fragment {
         if (game != null) {
             int dimension = game.getDimension();
             List<MSCell> cells = gameState.getCells();
-            if (cells == null || cells.isEmpty()) {
-                cells = game.getHasStarted() ? databaseHelper.loadCells() : databaseHelper.generateCells(dimension, dimension);
-            }
             setCells(cells);
             mGridView.setNumColumns(dimension);
             getArrayAdapterForBoardCells().notifyDataSetChanged();
@@ -291,8 +288,8 @@ public class GameFragment extends Fragment {
     public void onGenerateGameDataCancelled() {
     }
 
-    public void onGenerateGameDataPostExecute(MSGame result) {
-        updateViews(new MSGameState(result, null));
+    public void onGenerateGameDataPostExecute(MSGameState result) {
+        updateViews(result);
     }
 
     public void onExploreCellPreExecute() {
@@ -321,8 +318,8 @@ public class GameFragment extends Fragment {
     public void onToggleCheatModeCancelled() {
     }
 
-    public void onToggleCheatModePostExecute(MSGame result) {
-        updateViews(new MSGameState(result, null));
+    public void onToggleCheatModePostExecute(MSGameState result) {
+        updateViews(result);
     }
 
     public void onToggleFlagModePreExecute() {
