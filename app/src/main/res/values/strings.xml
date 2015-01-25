@@ -26,5 +26,8 @@
     <string name="game__validate_confirmation_dialog___title">Validate game</string>
     <string name="game__validate_confirmation_dialog___prompt">Are you sure you want to validate?</string>
     <string name="game__validate_confirmation_dialog___button_positive">Validate</string>
+    <string name="game__reset_confirmation_dialog___title">Reset game</string>
+    <string name="game__reset_confirmation_dialog___prompt">Are you sure you want to reset?</string>
+    <string name="game__reset_confirmation_dialog___button_positive">Reset</string>
 
 </resources>

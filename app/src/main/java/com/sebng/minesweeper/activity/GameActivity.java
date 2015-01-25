@@ -129,11 +129,34 @@ public class GameActivity extends MSBaseActivity
                 }
                 return true;
             case R.id.game__action_reset:
-                //TODO: show confirmation prompt
                 if (workerFragment != null) {
                     MSGame game = workerFragment.getGame();
                     if (game != null) {
-                        workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
+                        if (game.getHasStarted()) {
+                            if (game.getHasEnded()) {
+                                workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
+                            } else {
+                                new AlertDialog.Builder(this)
+                                        .setTitle(getString(R.string.game__reset_confirmation_dialog___title))
+                                        .setMessage(getString(R.string.game__reset_confirmation_dialog___prompt))
+                                        .setPositiveButton(getString(R.string.game__reset_confirmation_dialog___button_positive), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                FragmentManager fm = getFragmentManager();
+                                                GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+                                                if (mWorkerFragment != null) {
+                                                    MSGame game = workerFragment.getGame();
+                                                    if (game != null) {
+                                                        workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
+                                                    }
+                                                }
+                                            }
+
+                                        })
+                                        .setNegativeButton(getString(R.string.dialog___button_cancel), null)
+                                        .show();
+                            }
+                        }
                     }
                 }
                 return true;
