@@ -163,50 +163,50 @@ public class GameWorkerFragment extends Fragment {
     }
 
     public void cancelAsyncTasks() {
-        cancelGenerateGameData();
-        cancelExploreTile();
-        cancelFlagTile();
-        cancelValidateGame();
-        cancelToggleCheat();
-        cancelToggleFlagMode();
+        cancelGenerateGameDataTask();
+        cancelExploreTileTask();
+        cancelFlagTileTask();
+        cancelValidateGameTask();
+        cancelToggleCheatTask();
+        cancelToggleFlagModeTask();
     }
 
-    public void cancelGenerateGameData() {
+    public void cancelGenerateGameDataTask() {
         if (mGenerateGameDataTask != null &&
                 !mGenerateGameDataTask.isCancelled()) {
             mGenerateGameDataTask.cancel(true);
         }
     }
 
-    public void cancelExploreTile() {
+    public void cancelExploreTileTask() {
         if (mExploreTileTask != null &&
                 !mExploreTileTask.isCancelled()) {
             mExploreTileTask.cancel(true);
         }
     }
 
-    public void cancelFlagTile() {
+    public void cancelFlagTileTask() {
         if (mFlagTileTask != null &&
                 !mFlagTileTask.isCancelled()) {
             mFlagTileTask.cancel(true);
         }
     }
 
-    public void cancelValidateGame() {
+    public void cancelValidateGameTask() {
         if (mValidateGameTask != null &&
                 !mValidateGameTask.isCancelled()) {
             mValidateGameTask.cancel(true);
         }
     }
 
-    public void cancelToggleCheat() {
+    public void cancelToggleCheatTask() {
         if (mToggleCheatTask != null &&
                 !mToggleCheatTask.isCancelled()) {
             mToggleCheatTask.cancel(true);
         }
     }
 
-    public void cancelToggleFlagMode() {
+    public void cancelToggleFlagModeTask() {
         if (mToggleFlagModeTask != null &&
                 !mToggleFlagModeTask.isCancelled()) {
             mToggleFlagModeTask.cancel(true);
