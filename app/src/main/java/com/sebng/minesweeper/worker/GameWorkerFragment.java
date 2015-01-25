@@ -16,7 +16,7 @@ public class GameWorkerFragment extends Fragment {
     protected static final String ARG_MINES = "arg.MINES";
     protected static final String ARG_LOAD_GAME = "arg.LOAD_GAME";
     protected OnWorkerFragmentCallbacks mCallbacks = null;
-    protected MSGenerateGameDataTask mGenerateGameDataTask = null;
+    protected MSCreateNewGameTask mCreateNewGameTask = null;
     protected MSExploreTileTask mExploreTileTask = null;
     protected MSFlagTileTask mFlagTileTask = null;
     protected MSValidateGameTask mValidateGameTask = null;
@@ -62,15 +62,15 @@ public class GameWorkerFragment extends Fragment {
     }
 
     public void createNewGameAsync(int dimension, int mines) {
-        if (mGenerateGameDataTask != null)
+        if (mCreateNewGameTask != null)
             return;
 
-        mGenerateGameDataTask = new MSGenerateGameDataTask();
+        mCreateNewGameTask = new MSCreateNewGameTask();
         Object[] params = {
                 dimension,
                 mines
         };
-        mGenerateGameDataTask.execute(params);
+        mCreateNewGameTask.execute(params);
     }
 
     public MSGameState exploreTile(int rowIndex, int colIndex) {
@@ -163,7 +163,7 @@ public class GameWorkerFragment extends Fragment {
     }
 
     public void cancelAsyncTasks() {
-        cancelGenerateGameDataTask();
+        cancelCreateNewGameTask();
         cancelExploreTileTask();
         cancelFlagTileTask();
         cancelValidateGameTask();
@@ -171,10 +171,10 @@ public class GameWorkerFragment extends Fragment {
         cancelToggleFlagModeTask();
     }
 
-    public void cancelGenerateGameDataTask() {
-        if (mGenerateGameDataTask != null &&
-                !mGenerateGameDataTask.isCancelled()) {
-            mGenerateGameDataTask.cancel(true);
+    public void cancelCreateNewGameTask() {
+        if (mCreateNewGameTask != null &&
+                !mCreateNewGameTask.isCancelled()) {
+            mCreateNewGameTask.cancel(true);
         }
     }
 
@@ -245,11 +245,11 @@ public class GameWorkerFragment extends Fragment {
     }
 
     public static interface OnWorkerFragmentCallbacks {
-        void onGenerateGameDataPreExecute();
+        void onCreateNewGamePreExecute();
 
-        void onGenerateGameDataCancelled();
+        void onCreateNewGameCancelled();
 
-        void onGenerateGameDataPostExecute(MSGameState result);
+        void onCreateNewGamePostExecute(MSGameState result);
 
         void onExploreTilePreExecute();
 
@@ -282,10 +282,10 @@ public class GameWorkerFragment extends Fragment {
         void onToggleFlagModePostExecute(MSGame result);
     }
 
-    public class MSGenerateGameDataTask extends AsyncTask<Object, Void, MSGameState> {
+    public class MSCreateNewGameTask extends AsyncTask<Object, Void, MSGameState> {
         @Override
         public void onPreExecute() {
-            if (mCallbacks != null) mCallbacks.onGenerateGameDataPreExecute();
+            if (mCallbacks != null) mCallbacks.onCreateNewGamePreExecute();
         }
 
         @Override
@@ -302,14 +302,14 @@ public class GameWorkerFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MSGameState result) {
-            if (mCallbacks != null) mCallbacks.onGenerateGameDataPostExecute(result);
-            mGenerateGameDataTask = null;
+            if (mCallbacks != null) mCallbacks.onCreateNewGamePostExecute(result);
+            mCreateNewGameTask = null;
         }
 
         @Override
         protected void onCancelled() {
-            if (mCallbacks != null) mCallbacks.onGenerateGameDataCancelled();
-            mGenerateGameDataTask = null;
+            if (mCallbacks != null) mCallbacks.onCreateNewGameCancelled();
+            mCreateNewGameTask = null;
         }
     }
 

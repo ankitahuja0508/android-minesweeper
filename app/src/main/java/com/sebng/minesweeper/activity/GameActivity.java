@@ -207,23 +207,23 @@ public class GameActivity extends MSBaseActivity
     }
 
     @Override
-    public void onGenerateGameDataPreExecute() {
+    public void onCreateNewGamePreExecute() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onGenerateGameDataPreExecute();
+            gameFragment.onCreateNewGamePreExecute();
         }
     }
 
     @Override
-    public void onGenerateGameDataCancelled() {
+    public void onCreateNewGameCancelled() {
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onGenerateGameDataCancelled();
+            gameFragment.onCreateNewGameCancelled();
         }
     }
 
     @Override
-    public void onGenerateGameDataPostExecute(MSGameState result) {
+    public void onCreateNewGamePostExecute(MSGameState result) {
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             if (result != null) {
@@ -237,7 +237,7 @@ public class GameActivity extends MSBaseActivity
 
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
-            gameFragment.onGenerateGameDataPostExecute(result);
+            gameFragment.onCreateNewGamePostExecute(result);
         }
     }
 

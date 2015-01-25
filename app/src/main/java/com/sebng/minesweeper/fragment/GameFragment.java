@@ -282,13 +282,13 @@ public class GameFragment extends Fragment {
         mTiles = tiles;
     }
 
-    public void onGenerateGameDataPreExecute() {
+    public void onCreateNewGamePreExecute() {
     }
 
-    public void onGenerateGameDataCancelled() {
+    public void onCreateNewGameCancelled() {
     }
 
-    public void onGenerateGameDataPostExecute(MSGameState result) {
+    public void onCreateNewGamePostExecute(MSGameState result) {
         updateViews(result);
     }
 
