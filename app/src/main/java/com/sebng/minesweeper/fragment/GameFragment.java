@@ -206,10 +206,8 @@ public class GameFragment extends Fragment {
         }
         MSGame game = gameState.getGame();
         if (game != null) {
-            int dimension = game.getDimension();
-            List<MSTile> tiles = gameState.getTiles();
-            setTiles(tiles);
-            mGridView.setNumColumns(dimension);
+            setTiles(gameState.getTiles());
+            mGridView.setNumColumns(getDimension());
             getArrayAdapterForTiles().notifyDataSetChanged();
             if (game.getHasEnded()) {
                 Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
@@ -249,21 +247,13 @@ public class GameFragment extends Fragment {
     }
 
     public MSGame getGame() {
-        FragmentManager fm = getFragmentManager();
-        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-        return workerFragment != null ? workerFragment.getGame() : null;
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        return databaseHelper.loadGame();
     }
 
     public int getDimension() {
-        FragmentManager fm = getFragmentManager();
-        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-        return workerFragment != null ? workerFragment.getDimension() : 0;
-    }
-
-    public int getMines() {
-        FragmentManager fm = getFragmentManager();
-        GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
-        return workerFragment != null ? workerFragment.getMines() : 0;
+        MSGame game = getGame();
+        return game != null ? game.getDimension() : 0;
     }
 
     public ArrayAdapter<MSTile> getArrayAdapterForTiles() {

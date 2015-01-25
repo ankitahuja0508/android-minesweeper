@@ -45,6 +45,10 @@ public class GameSettingsDialogFragment extends DialogFragment {
 
     private OnFragmentInteractionListener mListener;
 
+    public GameSettingsDialogFragment() {
+        // Required empty public constructor
+    }
+
     public static GameSettingsDialogFragment newInstance(Integer dimension, Integer mines) {
         GameSettingsDialogFragment fragment = new GameSettingsDialogFragment();
         Bundle args = new Bundle();
@@ -52,10 +56,6 @@ public class GameSettingsDialogFragment extends DialogFragment {
         args.putInt(ARG_MINES, mines);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    public GameSettingsDialogFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -246,8 +246,8 @@ public class GameSettingsDialogFragment extends DialogFragment {
                 btnSubmit.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        RowModel selectedItemDimension =  (RowModel) mSpinnerDimension.getSelectedItem();
-                        RowModel selectedItemMines =  (RowModel) mSpinnerMines.getSelectedItem();
+                        RowModel selectedItemDimension = (RowModel) mSpinnerDimension.getSelectedItem();
+                        RowModel selectedItemMines = (RowModel) mSpinnerMines.getSelectedItem();
                         if (mListener != null) {
                             mListener.onGameSettingsDialogPositiveClick(selectedItemDimension.getValue(), selectedItemMines.getValue());
                         }
@@ -381,10 +381,6 @@ public class GameSettingsDialogFragment extends DialogFragment {
         public RowModel(Integer value, String label) {
             setValue(value);
             setLabel(label);
-        }
-
-        public Boolean isValid() {
-            return getValue() != null && !TextUtils.isEmpty(getLabel());
         }
 
         public Integer getValue() {
