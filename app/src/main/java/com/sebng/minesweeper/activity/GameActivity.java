@@ -179,8 +179,6 @@ public class GameActivity extends MSBaseActivity
                     }
                 }
                 return true;
-            case R.id.game__action_hint:
-                return true;
             case R.id.game__action_cheat:
                 item.setChecked(!item.isChecked());
                 if (workerFragment != null) {
@@ -193,9 +191,11 @@ public class GameActivity extends MSBaseActivity
                     }
                 }
                 return true;
-            case R.id.game__action_help:
-                showTutorial();
-                return true;
+//            case R.id.game__action_hint:
+//                return true;
+//            case R.id.game__action_help:
+//                showTutorial();
+//                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

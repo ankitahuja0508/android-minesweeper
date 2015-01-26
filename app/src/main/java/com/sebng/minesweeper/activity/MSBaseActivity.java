@@ -18,7 +18,7 @@ public class MSBaseActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.global__action_about:
+//            case R.id.global__action_about:
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -36,9 +36,9 @@ public class MainActivity extends MSBaseActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.main__action_help:
-                showTutorial();
-                return true;
+//            case R.id.main__action_help:
+//                showTutorial();
+//                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

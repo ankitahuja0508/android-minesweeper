@@ -2,9 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activity.MSBaseActivity">
-    <item
-        android:id="@+id/global__action_about"
-        android:title="@string/action_about"
-        android:orderInCategory="1000"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/global__action_about"-->
+        <!--android:title="@string/action_about"-->
+        <!--android:orderInCategory="1000"-->
+        <!--app:showAsAction="never" />-->
 </menu>
