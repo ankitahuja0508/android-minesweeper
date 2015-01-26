@@ -258,7 +258,7 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
             for (Pair<Integer, Integer> coordinatesOfBlankTile : coordinatesOfNewBlankTiles) {
                 for (int m = -1; m <= 1; m++) {
                     for (int n = -1; n <= 1; n++) {
-                        if ((m == 0 && n != 0) || (m != 0 && n == 0)) {
+                        if (m != 0 || n != 0) {
                             int rowIndexOfAdjacentTile = coordinatesOfBlankTile.first + m;
                             int colIndexOfAdjacentTile = coordinatesOfBlankTile.second + n;
                             if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
