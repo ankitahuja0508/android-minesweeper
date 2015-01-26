@@ -3,4 +3,7 @@
     <string name="ms_log_tag">MineSweeper</string>
     <integer name="ms_default_dimension">8</integer>
     <integer name="ms_default_mines">10</integer>
+    <string name="ms_author_name">Sebastian NG</string>
+    <string name="ms_author_website_link">http://www.sebng.com</string>
+    <string name="ms_author_website_link_friendly">www.sebng.com</string>
 </resources>

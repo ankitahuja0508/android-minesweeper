@@ -25,6 +25,19 @@
         <item name="android:layout_marginRight">12dp</item>
     </style>
 
+    <style name="MS.Button.Link">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/ms_link</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:minHeight">0dp</item>
+    </style>
+
     <!-- SPINNER -->
     <style name="MS.Spinner">
         <item name="android:layout_width">wrap_content</item>
@@ -33,9 +46,23 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <!-- TEXT -->
+    <style name="MS.Text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="MS.Text.About" parent="MS.Text">
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- COLOR -->
     <color name="ms_background_button_primary_solid">#fffbae17</color>
     <color name="ms_background_button_primary_activated_solid">#ffcc8a15</color>
     <color name="ms_background_button_primary_stroke">#ffc98b12</color>
     <color name="ms_text_button_primary">#ffffffff</color>
     <color name="ms_background_default">#ff2d3238</color>
+    <color name="ms_link">#ff0099cc</color>
 </resources>

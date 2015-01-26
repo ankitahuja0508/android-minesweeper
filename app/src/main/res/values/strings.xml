@@ -4,6 +4,7 @@
     <string name="app_name">Mine Sweeper</string>
     <string name="default_content_desc"></string>
     <string name="dialog___button_cancel">Cancel</string>
+    <string name="dialog___button_close">Close</string>
     <string name="action_about">About</string>
     <string name="action_help">Help</string>
     <string name="action_validate">Validate</string>
@@ -35,5 +36,6 @@
     <string name="game__end_of_game_dialog___message_lost">You have lost.</string>
     <string name="game__end_of_game_dialog___button_restart">Restart</string>
     <string name="game__end_of_game_dialog___button_new_game">New game</string>
+    <string name="about_dialog___title">Developed by</string>
 
 </resources>

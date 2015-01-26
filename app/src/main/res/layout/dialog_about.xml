@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dip"
+    android:gravity="center">
+
+    <ImageView
+        android:layout_width="100dip"
+        android:layout_height="100dip"
+        android:src="@drawable/ic_about"
+        android:contentDescription="@string/ms_author_name" />
+
+    <LinearLayout
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:text="@string/ms_author_name"
+            android:textStyle="bold"
+            style="@style/MS.Text.About" />
+
+        <Button
+            android:text="@string/ms_author_website_link_friendly"
+            style="@style/MS.Button.Link"
+            android:onClick="onClickBtnAuthorWebsite" />
+    </LinearLayout>
+
+</LinearLayout>
