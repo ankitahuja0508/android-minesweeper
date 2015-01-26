@@ -335,6 +335,16 @@ public class GameFragment extends Fragment {
     public void onFlagTileCancelled() {
     }
 
+    public void onProvideHintPreExecute() {
+    }
+
+    public void onProvideHintCancelled() {
+    }
+
+    public void onProvideHintPostExecute(MSGameState result) {
+        updateViews(result);
+    }
+
     public void onFlagTilePostExecute(MSGameState result) {
         updateViews(result);
     }

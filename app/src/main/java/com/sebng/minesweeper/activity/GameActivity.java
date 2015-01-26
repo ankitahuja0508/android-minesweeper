@@ -191,8 +191,24 @@ public class GameActivity extends MSBaseActivity
                     }
                 }
                 return true;
-//            case R.id.game__action_hint:
-//                return true;
+            case R.id.game__action_hint:
+                if (workerFragment != null) {
+                    MSGame game = workerFragment.getGame();
+                    if (game != null) {
+                        if (game.getHasEnded()) {
+                            onGameEnded(game);
+                        } else if (game.getHasStarted()) {
+                            if (game.getMines() == workerFragment.getNumberOfUnexploredTiles()) {
+                                Toast.makeText(this, getString(R.string.game__hint_attempt_validation), Toast.LENGTH_LONG).show();
+                            } else {
+                                workerFragment.provideHintAsync();
+                            }
+                        } else {
+                            Toast.makeText(this, getString(R.string.game__hint_unavailable_first_move_required), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+                return true;
 //            case R.id.game__action_help:
 //                showTutorial();
 //                return true;
@@ -368,6 +384,30 @@ public class GameActivity extends MSBaseActivity
         GameFragment gameFragment = getGameFragment();
         if (gameFragment != null) {
             gameFragment.onToggleFlagModePostExecute(result);
+        }
+    }
+
+    @Override
+    public void onProvideHintPreExecute() {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onProvideHintPreExecute();
+        }
+    }
+
+    @Override
+    public void onProvideHintCancelled() {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onProvideHintCancelled();
+        }
+    }
+
+    @Override
+    public void onProvideHintPostExecute(MSGameState result) {
+        GameFragment gameFragment = getGameFragment();
+        if (gameFragment != null) {
+            gameFragment.onProvideHintPostExecute(result);
         }
     }
 

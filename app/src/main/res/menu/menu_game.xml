@@ -24,11 +24,11 @@
         android:orderInCategory="400"
         android:showAsAction="never"
         android:checkable="true" />
-    <!--<item-->
-        <!--android:id="@+id/game__action_hint"-->
-        <!--android:title="@string/action_hint"-->
-        <!--android:orderInCategory="500"-->
-        <!--android:showAsAction="never" />-->
+    <item
+        android:id="@+id/game__action_hint"
+        android:title="@string/action_hint"
+        android:orderInCategory="500"
+        android:showAsAction="never" />
     <!--<item-->
         <!--android:id="@+id/game__action_help"-->
         <!--android:title="@string/action_help"-->

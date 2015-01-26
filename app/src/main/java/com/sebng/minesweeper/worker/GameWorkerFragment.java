@@ -9,6 +9,10 @@ import com.sebng.minesweeper.R;
 import com.sebng.minesweeper.helper.MSDatabaseHelper;
 import com.sebng.minesweeper.model.MSGame;
 import com.sebng.minesweeper.model.MSGameState;
+import com.sebng.minesweeper.model.MSTile;
+
+import java.util.List;
+import java.util.Random;
 
 public class GameWorkerFragment extends Fragment {
     public static final String FRAGMENT_TAG = "fragment_tag.GameWorkerFragment";
@@ -23,6 +27,7 @@ public class GameWorkerFragment extends Fragment {
     protected MSValidateGameTask mValidateGameTask = null;
     protected MSToggleCheatTask mToggleCheatTask = null;
     protected MSToggleFlagModeTask mToggleFlagModeTask = null;
+    protected MSProvideHintTask mProvideHintTask = null;
 
     /**
      * Returns a new instance of this fragment.
@@ -126,11 +131,15 @@ public class GameWorkerFragment extends Fragment {
     public MSGameState validateGame() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         MSGame game = databaseHelper.loadGame();
-        MSGameState gameState = new MSGameState(game, databaseHelper.loadTiles());
-        if (game.getHasEnded()) {
-            return gameState;
+        if (game != null) {
+            MSGameState gameState = new MSGameState(game, databaseHelper.loadTiles());
+            if (game.getHasEnded()) {
+                return gameState;
+            } else {
+                return databaseHelper.validateGame(gameState);
+            }
         } else {
-            return databaseHelper.validateGame(gameState);
+            return null;
         }
     }
 
@@ -164,6 +173,31 @@ public class GameWorkerFragment extends Fragment {
         mToggleFlagModeTask.execute(params);
     }
 
+    public MSGameState provideHint() {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        MSGame game = databaseHelper.loadGame();
+        if (game != null) {
+            List<MSTile> unexploredMineFreeTiles = databaseHelper.loadUnexploredMineFreeTiles();
+            if (!unexploredMineFreeTiles.isEmpty()) {
+                Random random = new Random();
+                int indexMineFreeTile = random.nextInt(unexploredMineFreeTiles.size());
+                MSTile mineFreeTile = unexploredMineFreeTiles.get(indexMineFreeTile);
+                exploreTile(mineFreeTile.getRowIndex(), mineFreeTile.getColIndex());
+            }
+            return new MSGameState(game, databaseHelper.loadTiles());
+        } else {
+            return null;
+        }
+    }
+
+    public void provideHintAsync() {
+        if (mProvideHintTask != null)
+            return;
+
+        mProvideHintTask = new MSProvideHintTask();
+        mProvideHintTask.execute();
+    }
+
     @Override
     public void onDestroy() {
         cancelAsyncTasks();
@@ -178,6 +212,7 @@ public class GameWorkerFragment extends Fragment {
         cancelValidateGameTask();
         cancelToggleCheatTask();
         cancelToggleFlagModeTask();
+        cancelProvideHintTask();
     }
 
     public void cancelCreateNewGameTask() {
@@ -222,6 +257,13 @@ public class GameWorkerFragment extends Fragment {
         }
     }
 
+    public void cancelProvideHintTask() {
+        if (mProvideHintTask != null &&
+                !mProvideHintTask.isCancelled()) {
+            mProvideHintTask.cancel(true);
+        }
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -246,6 +288,11 @@ public class GameWorkerFragment extends Fragment {
     public int getDimension() {
         MSGame game = getGame();
         return game != null ? game.getDimension() : 0;
+    }
+
+    public int getNumberOfUnexploredTiles() {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
+        return databaseHelper.getNumberOfUnexploredTiles();
     }
 
     public int getMines() {
@@ -289,6 +336,12 @@ public class GameWorkerFragment extends Fragment {
         void onToggleFlagModeCancelled();
 
         void onToggleFlagModePostExecute(MSGame result);
+
+        void onProvideHintPreExecute();
+
+        void onProvideHintCancelled();
+
+        void onProvideHintPostExecute(MSGameState result);
     }
 
     public class MSCreateNewGameTask extends AsyncTask<Object, Void, MSGameState> {
@@ -470,6 +523,30 @@ public class GameWorkerFragment extends Fragment {
         protected void onCancelled() {
             if (mCallbacks != null) mCallbacks.onToggleFlagModeCancelled();
             mToggleFlagModeTask = null;
+        }
+    }
+
+    public class MSProvideHintTask extends AsyncTask<Void, Void, MSGameState> {
+        @Override
+        public void onPreExecute() {
+            if (mCallbacks != null) mCallbacks.onProvideHintPreExecute();
+        }
+
+        @Override
+        protected MSGameState doInBackground(Void... params) {
+            return provideHint();
+        }
+
+        @Override
+        protected void onPostExecute(MSGameState result) {
+            if (mCallbacks != null) mCallbacks.onProvideHintPostExecute(result);
+            mProvideHintTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mCallbacks != null) mCallbacks.onProvideHintCancelled();
+            mProvideHintTask = null;
         }
     }
 }

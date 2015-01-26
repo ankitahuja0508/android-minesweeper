@@ -359,6 +359,42 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
         return tiles;
     }
 
+    public List<MSTile> loadUnexploredMineFreeTiles() {
+        ArrayList<MSTile> tiles = new ArrayList<>();
+        Cursor result = getReadableDatabase()
+                .rawQuery(String.format("select %s" +
+                                ",  %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                " from %s where %s = 0 and %s = 0",
+                        MSTile.PARAM_KEY_ID,
+                        MSTile.PARAM_KEY_ROW_INDEX,
+                        MSTile.PARAM_KEY_COL_INDEX,
+                        MSTile.PARAM_KEY_IS_EXPLORED,
+                        MSTile.PARAM_KEY_IS_FLAGGED,
+                        MSTile.PARAM_KEY_HAS_MINE,
+                        MSTile.PARAM_KEY_ADJACENT_MINES,
+                        MSTile.DB_TABLE_NAME,
+                        MSTile.PARAM_KEY_IS_EXPLORED,
+                        MSTile.PARAM_KEY_HAS_MINE), null);
+        while (result.moveToNext()) {
+            tiles.add(new MSTile(
+                    result.getInt(0),
+                    result.getInt(1),
+                    result.getInt(2),
+                    result.getInt(3) == 1,
+                    result.getInt(4) == 1,
+                    result.getInt(5) == 1,
+                    result.getInt(6)
+            ));
+        }
+        result.close();
+        return tiles;
+    }
+
     public int getNumberOfUnexploredTiles() {
         int num = 0;
         Cursor result = getReadableDatabase()
