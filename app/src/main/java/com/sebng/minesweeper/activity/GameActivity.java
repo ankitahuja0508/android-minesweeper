@@ -26,8 +26,8 @@ public class GameActivity extends MSBaseActivity
     public static final int INDEX_MENU_FLAG_MODE = 2;
     public static final int INDEX_MENU_CHEAT = 3;
     protected GameWorkerFragment mWorkerFragment;
-
     protected GameFragment mGameFragment;
+    protected AlertDialog mAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +69,15 @@ public class GameActivity extends MSBaseActivity
                 .commit();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (mAlertDialog != null) {
+            mAlertDialog.dismiss();
+        }
+    }
+
     public void updateActionBarTitle(ActionBar actionBar, int dimension, int mines) {
         if (actionBar != null) {
             actionBar.setTitle(String.format(getString(R.string.game__activity_title), dimension, dimension, mines));
@@ -106,7 +115,7 @@ public class GameActivity extends MSBaseActivity
                         if (game.getHasEnded()) {
                             Toast.makeText(this, getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
                         } else if (game.getHasStarted()) {
-                            new AlertDialog.Builder(this)
+                            mAlertDialog = new AlertDialog.Builder(this)
                                     .setTitle(getString(R.string.game__validate_confirmation_dialog___title))
                                     .setMessage(getString(R.string.game__validate_confirmation_dialog___prompt))
                                     .setPositiveButton(getString(R.string.game__validate_confirmation_dialog___button_positive), new DialogInterface.OnClickListener() {
@@ -136,7 +145,7 @@ public class GameActivity extends MSBaseActivity
                             if (game.getHasEnded()) {
                                 workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
                             } else {
-                                new AlertDialog.Builder(this)
+                                mAlertDialog = new AlertDialog.Builder(this)
                                         .setTitle(getString(R.string.game__restart_confirmation_dialog___title))
                                         .setMessage(getString(R.string.game__restart_confirmation_dialog___prompt))
                                         .setPositiveButton(getString(R.string.game__restart_confirmation_dialog___button_positive), new DialogInterface.OnClickListener() {
