@@ -20,6 +20,7 @@ import com.sebng.minesweeper.worker.GameWorkerFragment;
 public class GameActivity extends MSBaseActivity
         implements GameFragment.OnFragmentInteractionListener,
         GameWorkerFragment.OnWorkerFragmentCallbacks {
+    public static final int REQUEST_CODE_NEW_GAME = 1000;
     public static final String EXTRA_DIMENSION = "extra.DIMENSION";
     public static final String EXTRA_MINES = "extra.MINES";
     public static final String EXTRA_LOAD_GAME = "extra.LOAD_GAME";
@@ -113,7 +114,7 @@ public class GameActivity extends MSBaseActivity
                     MSGame game = workerFragment.getGame();
                     if (game != null) {
                         if (game.getHasEnded()) {
-                            Toast.makeText(this, getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+                            onGameEnded(game);
                         } else if (game.getHasStarted()) {
                             mAlertDialog = new AlertDialog.Builder(this)
                                     .setTitle(getString(R.string.game__validate_confirmation_dialog___title))
@@ -373,5 +374,45 @@ public class GameActivity extends MSBaseActivity
     @Override
     public void onGameFragmentAttached(GameFragment gameFragment) {
         setGameFragment(gameFragment);
+    }
+
+    @Override
+    public void onGameEnded(MSGame game) {
+        if (game.getHasEnded()) {
+            int resIdTitle, resIdMessage;
+            if (game.getHasWon()) {
+                resIdTitle = R.string.game__end_of_game_dialog___title_won;
+                resIdMessage = R.string.game__end_of_game_dialog___message_won;
+            } else {
+                resIdTitle = R.string.game__end_of_game_dialog___title_lost;
+                resIdMessage = R.string.game__end_of_game_dialog___message_lost;
+            }
+            mAlertDialog = new AlertDialog.Builder(this)
+                    .setTitle(getString(resIdTitle))
+                    .setMessage(getString(resIdMessage))
+                    .setPositiveButton(getString(R.string.game__end_of_game_dialog___button_restart), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            FragmentManager fm = getFragmentManager();
+                            GameWorkerFragment workerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
+                            if (workerFragment != null) {
+                                MSGame game = workerFragment.getGame();
+                                if (game != null) {
+                                    workerFragment.createNewGameAsync(game.getDimension(), game.getMines());
+                                }
+                            }
+                        }
+
+                    })
+                    .setNegativeButton(getString(R.string.game__end_of_game_dialog___button_new_game), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent returnIntent = new Intent();
+                            GameActivity.this.setResult(RESULT_OK, returnIntent);
+                            GameActivity.this.finish();
+                        }
+                    })
+                    .show();
+        }
     }
 }

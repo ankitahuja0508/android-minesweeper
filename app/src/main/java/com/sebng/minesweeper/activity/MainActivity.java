@@ -45,6 +45,16 @@ public class MainActivity extends MSBaseActivity
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == GameActivity.REQUEST_CODE_NEW_GAME &&
+                resultCode == Activity.RESULT_OK) {
+            showGameSettings();
+        }
+    }
+
+    @Override
     public void onGameSettingsDialogPositiveClick(int dimension, int mines) {
         Intent intent = new Intent(this, GameActivity.class);
         Bundle extras = new Bundle();
@@ -53,7 +63,12 @@ public class MainActivity extends MSBaseActivity
         extras.putBoolean(GameActivity.EXTRA_LOAD_GAME, false);
         intent.putExtras(extras);
 
-        startActivity(intent);
+        startActivityForResult(intent, GameActivity.REQUEST_CODE_NEW_GAME);
+    }
+
+    @Override
+    public void onRequestToCreateNewGame() {
+        showGameSettings();
     }
 
     @Override
@@ -73,6 +88,21 @@ public class MainActivity extends MSBaseActivity
         }
         intent.putExtras(extras);
 
-        startActivity(intent);
+        startActivityForResult(intent, GameActivity.REQUEST_CODE_NEW_GAME);
+    }
+
+    public void showGameSettings() {
+        MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(this);
+        MSGame game = databaseHelper.loadGame();
+        int dimension, mines;
+        if (game != null) {
+            dimension = game.getDimension();
+            mines = game.getMines();
+        } else {
+            dimension = getResources().getInteger(R.integer.ms_default_dimension);
+            mines = getResources().getInteger(R.integer.ms_default_mines);
+        }
+        GameSettingsDialogFragment gameSettingsDialogFragment = GameSettingsDialogFragment.newInstance(dimension, mines);
+        gameSettingsDialogFragment.show(getFragmentManager(), GameSettingsDialogFragment.class.toString());
     }
 }

@@ -54,18 +54,9 @@ public class MainFragment extends Fragment {
         buttonNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-                MSGame game = databaseHelper.loadGame();
-                int dimension, mines;
-                if (game != null) {
-                    dimension = game.getDimension();
-                    mines = game.getMines();
-                } else {
-                    dimension = getResources().getInteger(R.integer.ms_default_dimension);
-                    mines = getResources().getInteger(R.integer.ms_default_mines);
+                if (mListener != null) {
+                    mListener.onRequestToCreateNewGame();
                 }
-                GameSettingsDialogFragment gameSettingsDialogFragment = GameSettingsDialogFragment.newInstance(dimension, mines);
-                gameSettingsDialogFragment.show(getFragmentManager(), GameSettingsDialogFragment.class.toString());
             }
         });
         mButtonContinue = (Button) rootView.findViewById(R.id.main__button_continue);
@@ -122,6 +113,8 @@ public class MainFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
+        public void onRequestToCreateNewGame();
+
         public void onRequestToContinueGame();
     }
 }

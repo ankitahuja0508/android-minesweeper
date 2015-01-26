@@ -1,7 +1,9 @@
 package com.sebng.minesweeper.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -214,8 +216,8 @@ public class GameFragment extends Fragment {
                 mGridView.setNumColumns(getDimension());
                 getArrayAdapterForTiles().notifyDataSetChanged();
 
-                if (game.getHasEnded()) {
-                    Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
+                if (game.getHasEnded() && mListener != null) {
+                    mListener.onGameEnded(game);
                 }
             }
         }
@@ -237,14 +239,14 @@ public class GameFragment extends Fragment {
 
                     if (workerFragment != null) {
                         MSGame game = workerFragment.getGame();
-                        if (game.getHasEnded()) {
-                            Toast.makeText(getActivity(), getString(game.getHasWon() ? R.string.game__ended_and_won : R.string.game__ended_and_lost), Toast.LENGTH_SHORT).show();
-                        } else {
+                        if (!game.getHasEnded()) {
                             if (game.getEnableFlagMode()) {
                                 workerFragment.flagTileAsync(tile.getRowIndex(), tile.getColIndex(), !tile.getIsFlagged());
                             } else {
                                 workerFragment.exploreTileAsync(tile.getRowIndex(), tile.getColIndex());
                             }
+                        } else if (mListener != null) {
+                            mListener.onGameEnded(game);
                         }
                     }
                 }
@@ -349,6 +351,8 @@ public class GameFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         public void onGameFragmentAttached(GameFragment gameFragment);
+
+        public void onGameEnded(MSGame game);
     }
 
     private class GridItemViewHolder {
