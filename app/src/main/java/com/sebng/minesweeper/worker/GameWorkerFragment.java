@@ -476,7 +476,7 @@ public class GameWorkerFragment extends Fragment {
             if (params != null && params.length == 1) {
                 Boolean bEnable = (Boolean) params[0];
                 game.setEnableCheat(bEnable);
-                MSGame.updateGame(databaseHelper, game);
+                game.saveChanges(databaseHelper);
             }
             return new MSGameState(game, MSTile.loadTiles(databaseHelper));
         }
@@ -507,7 +507,7 @@ public class GameWorkerFragment extends Fragment {
                 Boolean bEnable = (Boolean) params[0];
                 game.setEnableFlagMode(bEnable);
                 MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-                MSGame.updateGame(databaseHelper, game);
+                game.saveChanges(databaseHelper);
             }
             return game;
         }

@@ -47,6 +47,112 @@ public class MSGame extends MSObject {
         setEnableFlagMode(enableFlagMode);
     }
 
+    public static void createTableForGames(SQLiteDatabase db) {
+        db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
+                        ", %s real" +
+                        ", %s real" +
+                        ", %s real" +
+                        ", %s real" +
+                        ", %s real" +
+                        ", %s real" +
+                        ", %s real" +
+                        ");",
+                MSGame.DB_TABLE_NAME,
+                MSGame.PARAM_KEY_ID,
+                MSGame.PARAM_KEY_DIMENSION,
+                MSGame.PARAM_KEY_MINES,
+                MSGame.PARAM_KEY_HAS_STARTED,
+                MSGame.PARAM_KEY_HAS_ENDED,
+                MSGame.PARAM_KEY_HAS_WON,
+                MSGame.PARAM_KEY_ENABLE_CHEAT,
+                MSGame.PARAM_KEY_ENABLE_FLAG_MODE));
+    }
+
+    public static void dropTableForGames(SQLiteDatabase db) {
+        db.execSQL(String.format("drop table if exists %s", MSGame.DB_TABLE_NAME));
+    }
+
+    public static MSGameState createNewGame(MSDatabaseHelper dbHelper, int dimension, int mines) {
+        ContentValues cv = new ContentValues();
+        if (MSGame.loadGame(dbHelper) == null) {
+            cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE); // since this app only supports 1 game at the moment, the id of game will be fixed
+        }
+        cv.put(MSGame.PARAM_KEY_DIMENSION, dimension);
+        cv.put(MSGame.PARAM_KEY_MINES, mines);
+        cv.put(MSGame.PARAM_KEY_HAS_STARTED, 0);
+        cv.put(MSGame.PARAM_KEY_HAS_ENDED, 0);
+        cv.put(MSGame.PARAM_KEY_HAS_WON, 0);
+        cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, 0);
+        cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, 0);
+        if (MSGame.loadGame(dbHelper) == null) {
+            dbHelper.getWritableDatabase().insert(MSGame.DB_TABLE_NAME, MSGame.PARAM_KEY_ID, cv);
+        } else {
+            dbHelper.getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
+        }
+        MSGame game = new MSGame(dimension, mines, false, false, false, false, false);
+
+        List<MSTile> tiles = MSTile.generateTiles(dbHelper, dimension, mines);
+
+        return new MSGameState(game, tiles);
+    }
+
+    public static MSGame loadGame(MSDatabaseHelper dbHelper) {
+        ArrayList<MSGame> games = new ArrayList<>();
+        Cursor result = dbHelper.getReadableDatabase()
+                .rawQuery(String.format("select %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                ", %s" +
+                                " from %s",
+                        MSGame.PARAM_KEY_DIMENSION,
+                        MSGame.PARAM_KEY_MINES,
+                        MSGame.PARAM_KEY_HAS_STARTED,
+                        MSGame.PARAM_KEY_HAS_ENDED,
+                        MSGame.PARAM_KEY_HAS_WON,
+                        MSGame.PARAM_KEY_ENABLE_CHEAT,
+                        MSGame.PARAM_KEY_ENABLE_FLAG_MODE,
+                        MSGame.DB_TABLE_NAME), null);
+        while (result.moveToNext()) {
+            games.add(new MSGame(
+                    result.getInt(0),
+                    result.getInt(1),
+                    result.getInt(2) == 1,
+                    result.getInt(3) == 1,
+                    result.getInt(4) == 1,
+                    result.getInt(5) == 1,
+                    result.getInt(6) == 1
+            ));
+        }
+        result.close();
+        return games.isEmpty() ? null : games.get(0);
+    }
+
+    public static MSGameState validateGame(MSDatabaseHelper dbHelper, MSGameState gameState) {
+        MSGame game = gameState.getGame();
+        if (game != null) {
+            game.setHasEnded(true);
+            game.setHasWon(MSTile.getNumberOfUnexploredTiles(dbHelper) == game.getMines());
+            game.saveChanges(dbHelper);
+        }
+        return gameState;
+    }
+
+    public void saveChanges(MSDatabaseHelper dbHelper) {
+        ContentValues cv = new ContentValues();
+        cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE);
+        cv.put(MSGame.PARAM_KEY_DIMENSION, getDimension());
+        cv.put(MSGame.PARAM_KEY_MINES, getMines());
+        cv.put(MSGame.PARAM_KEY_HAS_STARTED, getHasStarted() ? 1 : 0);
+        cv.put(MSGame.PARAM_KEY_HAS_ENDED, getHasEnded() ? 1 : 0);
+        cv.put(MSGame.PARAM_KEY_HAS_WON, getHasWon() ? 1 : 0);
+        cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, getEnableCheat() ? 1 : 0);
+        cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, getEnableFlagMode() ? 1 : 0);
+        dbHelper.getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
+    }
+
     public Integer getDimension() {
         return mDimension;
     }
@@ -101,114 +207,6 @@ public class MSGame extends MSObject {
 
     public void setEnableFlagMode(Boolean enableFlagMode) {
         mEnableFlagMode = enableFlagMode;
-    }
-
-    public static void createTableForGames(SQLiteDatabase db) {
-        db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
-                        ", %s real" +
-                        ", %s real" +
-                        ", %s real" +
-                        ", %s real" +
-                        ", %s real" +
-                        ", %s real" +
-                        ", %s real" +
-                        ");",
-                MSGame.DB_TABLE_NAME,
-                MSGame.PARAM_KEY_ID,
-                MSGame.PARAM_KEY_DIMENSION,
-                MSGame.PARAM_KEY_MINES,
-                MSGame.PARAM_KEY_HAS_STARTED,
-                MSGame.PARAM_KEY_HAS_ENDED,
-                MSGame.PARAM_KEY_HAS_WON,
-                MSGame.PARAM_KEY_ENABLE_CHEAT,
-                MSGame.PARAM_KEY_ENABLE_FLAG_MODE));
-    }
-
-    public static void dropTableForGames(SQLiteDatabase db) {
-        db.execSQL(String.format("drop table if exists %s", MSGame.DB_TABLE_NAME));
-    }
-
-    public static MSGameState createNewGame(MSDatabaseHelper dbHelper, int dimension, int mines) {
-        ContentValues cv = new ContentValues();
-        if (MSGame.loadGame(dbHelper) == null) {
-            cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE); // since this app only supports 1 game at the moment, the id of game will be fixed
-        }
-        cv.put(MSGame.PARAM_KEY_DIMENSION, dimension);
-        cv.put(MSGame.PARAM_KEY_MINES, mines);
-        cv.put(MSGame.PARAM_KEY_HAS_STARTED, 0);
-        cv.put(MSGame.PARAM_KEY_HAS_ENDED, 0);
-        cv.put(MSGame.PARAM_KEY_HAS_WON, 0);
-        cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, 0);
-        cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, 0);
-        if (MSGame.loadGame(dbHelper) == null) {
-            dbHelper.getWritableDatabase().insert(MSGame.DB_TABLE_NAME, MSGame.PARAM_KEY_ID, cv);
-        } else {
-            dbHelper.getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
-        }
-        MSGame game = new MSGame(dimension, mines, false, false, false, false, false);
-
-        List<MSTile> tiles = MSTile.generateTiles(dbHelper, dimension, mines);
-
-        return new MSGameState(game, tiles);
-    }
-
-    public static void updateGame(MSDatabaseHelper dbHelper, MSGame game) {
-        if (game != null) {
-            ContentValues cv = new ContentValues();
-            cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE);
-            cv.put(MSGame.PARAM_KEY_DIMENSION, game.getDimension());
-            cv.put(MSGame.PARAM_KEY_MINES, game.getMines());
-            cv.put(MSGame.PARAM_KEY_HAS_STARTED, game.getHasStarted() ? 1 : 0);
-            cv.put(MSGame.PARAM_KEY_HAS_ENDED, game.getHasEnded() ? 1 : 0);
-            cv.put(MSGame.PARAM_KEY_HAS_WON, game.getHasWon() ? 1 : 0);
-            cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, game.getEnableCheat() ? 1 : 0);
-            cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, game.getEnableFlagMode() ? 1 : 0);
-            dbHelper.getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
-        }
-    }
-
-    public static MSGame loadGame(MSDatabaseHelper dbHelper) {
-        ArrayList<MSGame> games = new ArrayList<>();
-        Cursor result = dbHelper.getReadableDatabase()
-                .rawQuery(String.format("select %s" +
-                                ", %s" +
-                                ", %s" +
-                                ", %s" +
-                                ", %s" +
-                                ", %s" +
-                                ", %s" +
-                                " from %s",
-                        MSGame.PARAM_KEY_DIMENSION,
-                        MSGame.PARAM_KEY_MINES,
-                        MSGame.PARAM_KEY_HAS_STARTED,
-                        MSGame.PARAM_KEY_HAS_ENDED,
-                        MSGame.PARAM_KEY_HAS_WON,
-                        MSGame.PARAM_KEY_ENABLE_CHEAT,
-                        MSGame.PARAM_KEY_ENABLE_FLAG_MODE,
-                        MSGame.DB_TABLE_NAME), null);
-        while (result.moveToNext()) {
-            games.add(new MSGame(
-                    result.getInt(0),
-                    result.getInt(1),
-                    result.getInt(2) == 1,
-                    result.getInt(3) == 1,
-                    result.getInt(4) == 1,
-                    result.getInt(5) == 1,
-                    result.getInt(6) == 1
-            ));
-        }
-        result.close();
-        return games.isEmpty() ? null : games.get(0);
-    }
-
-    public static MSGameState validateGame(MSDatabaseHelper dbHelper, MSGameState gameState) {
-        MSGame game = gameState.getGame();
-        if (game != null) {
-            game.setHasEnded(true);
-            game.setHasWon(MSTile.getNumberOfUnexploredTiles(dbHelper) == game.getMines());
-            updateGame(dbHelper, game);
-        }
-        return gameState;
     }
 
     @Override

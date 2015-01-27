@@ -256,7 +256,7 @@ public class MSTile extends MSObject {
         }
         MSGame game = MSGame.loadGame(dbHelper);
         game.setHasStarted(true);
-        MSGame.updateGame(dbHelper, game);
+        game.saveChanges(dbHelper);
         return exploreTile(dbHelper, new MSGameState(game, tiles), rowIndexFirstMove, colIndexFirstMove);
     }
 
@@ -305,7 +305,7 @@ public class MSTile extends MSObject {
                         if (tile.getHasMine()) {
                             game.setHasEnded(true);
                             game.setHasWon(false);
-                            MSGame.updateGame(dbHelper, game);
+                            game.saveChanges(dbHelper);
                         } else if (tile.getAdjacentMines() == 0) {
                             List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles = new ArrayList<>();
                             coordinatesOfNewBlankTiles.add(new Pair<>(rowIndexMove, colIndexMove));
