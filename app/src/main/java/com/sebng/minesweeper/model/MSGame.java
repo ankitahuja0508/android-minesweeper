@@ -68,7 +68,7 @@ public class MSGame extends MSObject {
                 MSGame.PARAM_KEY_ENABLE_FLAG_MODE));
     }
 
-    public static void dropTableForGames(SQLiteDatabase db) {
+    public static void dropTable(SQLiteDatabase db) {
         db.execSQL(String.format("drop table if exists %s", MSGame.DB_TABLE_NAME));
     }
 

@@ -37,8 +37,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (BuildConfig.DEBUG)
             android.util.Log.d(MSApplication.LOG_TAG, "Upgrading database, which will destroy all old data");
-        MSGame.dropTableForGames(db);
-        MSTile.dropTableForTiles(db);
+        MSGame.dropTable(db);
+        MSTile.dropTable(db);
         onCreate(db);
     }
 

@@ -123,7 +123,7 @@ public class MSTile extends MSObject {
                 MSTile.PARAM_KEY_ADJACENT_MINES));
     }
 
-    public static void dropTableForTiles(SQLiteDatabase db) {
+    public static void dropTable(SQLiteDatabase db) {
         db.execSQL(String.format("drop table if exists %s", MSTile.DB_TABLE_NAME));
     }
 
