@@ -1,22 +1,13 @@
 package com.sebng.minesweeper.helper;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Pair;
 
 import com.sebng.minesweeper.BuildConfig;
 import com.sebng.minesweeper.MSApplication;
 import com.sebng.minesweeper.model.MSTile;
 import com.sebng.minesweeper.model.MSGame;
-import com.sebng.minesweeper.model.MSGameState;
-
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Random;
 
 public class MSDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mine_sweeper";
@@ -38,8 +29,8 @@ public class MSDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        MSGame.createTableForGames(db);
-        MSTile.createTableForGames(db);
+        MSGame.createTable(db);
+        MSTile.createTable(db);
     }
 
     @Override

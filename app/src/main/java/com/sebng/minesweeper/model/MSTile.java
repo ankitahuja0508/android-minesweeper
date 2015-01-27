@@ -104,7 +104,7 @@ public class MSTile extends MSObject {
         mAdjacentMines = adjacentMines;
     }
 
-    public static void createTableForGames(SQLiteDatabase db) {
+    public static void createTable(SQLiteDatabase db) {
         db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
                         ", %s real" +
                         ", %s real" +
