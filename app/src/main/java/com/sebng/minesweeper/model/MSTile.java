@@ -57,18 +57,18 @@ public class MSTile extends MSObject {
                         ", %s real" +
                         ", %s real" +
                         ");",
-                MSTile.DB_TABLE_NAME,
-                MSGame.PARAM_KEY_ID,
-                MSTile.PARAM_KEY_ROW_INDEX,
-                MSTile.PARAM_KEY_COL_INDEX,
-                MSTile.PARAM_KEY_IS_EXPLORED,
-                MSTile.PARAM_KEY_IS_FLAGGED,
-                MSTile.PARAM_KEY_HAS_MINE,
-                MSTile.PARAM_KEY_ADJACENT_MINES));
+                DB_TABLE_NAME,
+                PARAM_KEY_ID,
+                PARAM_KEY_ROW_INDEX,
+                PARAM_KEY_COL_INDEX,
+                PARAM_KEY_IS_EXPLORED,
+                PARAM_KEY_IS_FLAGGED,
+                PARAM_KEY_HAS_MINE,
+                PARAM_KEY_ADJACENT_MINES));
     }
 
     public static void dropTable(SQLiteDatabase db) {
-        db.execSQL(String.format("drop table if exists %s", MSTile.DB_TABLE_NAME));
+        db.execSQL(String.format("drop table if exists %s", DB_TABLE_NAME));
     }
 
     public static List<MSTile> loadTiles(MSDatabaseHelper dbHelper) {
@@ -82,14 +82,14 @@ public class MSTile extends MSObject {
                                 ", %s" +
                                 ", %s" +
                                 " from %s",
-                        MSTile.PARAM_KEY_ID,
-                        MSTile.PARAM_KEY_ROW_INDEX,
-                        MSTile.PARAM_KEY_COL_INDEX,
-                        MSTile.PARAM_KEY_IS_EXPLORED,
-                        MSTile.PARAM_KEY_IS_FLAGGED,
-                        MSTile.PARAM_KEY_HAS_MINE,
-                        MSTile.PARAM_KEY_ADJACENT_MINES,
-                        MSTile.DB_TABLE_NAME), null);
+                        PARAM_KEY_ID,
+                        PARAM_KEY_ROW_INDEX,
+                        PARAM_KEY_COL_INDEX,
+                        PARAM_KEY_IS_EXPLORED,
+                        PARAM_KEY_IS_FLAGGED,
+                        PARAM_KEY_HAS_MINE,
+                        PARAM_KEY_ADJACENT_MINES,
+                        DB_TABLE_NAME), null);
         while (result.moveToNext()) {
             tiles.add(new MSTile(
                     result.getInt(0),
@@ -106,9 +106,9 @@ public class MSTile extends MSObject {
     }
 
     public static List<MSTile> generateTiles(MSDatabaseHelper dbHelper, int dimension, int mines) {
-        dbHelper.getWritableDatabase().delete(MSTile.DB_TABLE_NAME, null, null);
+        dbHelper.getWritableDatabase().delete(DB_TABLE_NAME, null, null);
 
-        ArrayList<MSTile> tiles = new ArrayList<MSTile>();
+        ArrayList<MSTile> tiles = new ArrayList<>();
         for (int i = 0, k = 1; i < dimension; i++) {
             for (int j = 0; j < dimension; j++, k++) {
                 MSTile tile = new MSTile(k, i, j, false, false, false, 0);
@@ -240,8 +240,8 @@ public class MSTile extends MSObject {
         int num = 0;
         Cursor result = dbHelper.getReadableDatabase()
                 .rawQuery(String.format("select 1 from %s where %s = 0",
-                        MSTile.DB_TABLE_NAME,
-                        MSTile.PARAM_KEY_IS_EXPLORED), null);
+                        DB_TABLE_NAME,
+                        PARAM_KEY_IS_EXPLORED), null);
         while (result.moveToNext()) {
             num++;
         }
@@ -260,16 +260,16 @@ public class MSTile extends MSObject {
                                 ", %s" +
                                 ", %s" +
                                 " from %s where %s = 0 and %s = 0",
-                        MSTile.PARAM_KEY_ID,
-                        MSTile.PARAM_KEY_ROW_INDEX,
-                        MSTile.PARAM_KEY_COL_INDEX,
-                        MSTile.PARAM_KEY_IS_EXPLORED,
-                        MSTile.PARAM_KEY_IS_FLAGGED,
-                        MSTile.PARAM_KEY_HAS_MINE,
-                        MSTile.PARAM_KEY_ADJACENT_MINES,
-                        MSTile.DB_TABLE_NAME,
-                        MSTile.PARAM_KEY_IS_EXPLORED,
-                        MSTile.PARAM_KEY_HAS_MINE), null);
+                        PARAM_KEY_ID,
+                        PARAM_KEY_ROW_INDEX,
+                        PARAM_KEY_COL_INDEX,
+                        PARAM_KEY_IS_EXPLORED,
+                        PARAM_KEY_IS_FLAGGED,
+                        PARAM_KEY_HAS_MINE,
+                        PARAM_KEY_ADJACENT_MINES,
+                        DB_TABLE_NAME,
+                        PARAM_KEY_IS_EXPLORED,
+                        PARAM_KEY_HAS_MINE), null);
         while (result.moveToNext()) {
             tiles.add(new MSTile(
                     result.getInt(0),
@@ -304,17 +304,17 @@ public class MSTile extends MSObject {
 
     public void insertOrUpdate(MSDatabaseHelper dbHelper, boolean bUpdate) {
         ContentValues cv = new ContentValues();
-        cv.put(MSTile.PARAM_KEY_ID, getId());
-        cv.put(MSTile.PARAM_KEY_ROW_INDEX, getRowIndex());
-        cv.put(MSTile.PARAM_KEY_COL_INDEX, getColIndex());
-        cv.put(MSTile.PARAM_KEY_IS_EXPLORED, getIsExplored());
-        cv.put(MSTile.PARAM_KEY_IS_FLAGGED, getIsFlagged());
-        cv.put(MSTile.PARAM_KEY_HAS_MINE, getHasMine());
-        cv.put(MSTile.PARAM_KEY_ADJACENT_MINES, getAdjacentMines());
+        cv.put(PARAM_KEY_ID, getId());
+        cv.put(PARAM_KEY_ROW_INDEX, getRowIndex());
+        cv.put(PARAM_KEY_COL_INDEX, getColIndex());
+        cv.put(PARAM_KEY_IS_EXPLORED, getIsExplored());
+        cv.put(PARAM_KEY_IS_FLAGGED, getIsFlagged());
+        cv.put(PARAM_KEY_HAS_MINE, getHasMine());
+        cv.put(PARAM_KEY_ADJACENT_MINES, getAdjacentMines());
         if (bUpdate) {
-            dbHelper.getWritableDatabase().update(MSTile.DB_TABLE_NAME, cv, MSTile.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(getId())});
+            dbHelper.getWritableDatabase().update(DB_TABLE_NAME, cv, PARAM_KEY_ID + " = ?", new String[]{String.valueOf(getId())});
         } else {
-            dbHelper.getWritableDatabase().insert(MSTile.DB_TABLE_NAME, MSTile.PARAM_KEY_ID, cv);
+            dbHelper.getWritableDatabase().insert(DB_TABLE_NAME, PARAM_KEY_ID, cv);
         }
     }
 

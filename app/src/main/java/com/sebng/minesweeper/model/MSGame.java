@@ -57,42 +57,41 @@ public class MSGame extends MSObject {
                         ", %s real" +
                         ", %s real" +
                         ");",
-                MSGame.DB_TABLE_NAME,
-                MSGame.PARAM_KEY_ID,
-                MSGame.PARAM_KEY_DIMENSION,
-                MSGame.PARAM_KEY_MINES,
-                MSGame.PARAM_KEY_HAS_STARTED,
-                MSGame.PARAM_KEY_HAS_ENDED,
-                MSGame.PARAM_KEY_HAS_WON,
-                MSGame.PARAM_KEY_ENABLE_CHEAT,
-                MSGame.PARAM_KEY_ENABLE_FLAG_MODE));
+                DB_TABLE_NAME,
+                PARAM_KEY_ID,
+                PARAM_KEY_DIMENSION,
+                PARAM_KEY_MINES,
+                PARAM_KEY_HAS_STARTED,
+                PARAM_KEY_HAS_ENDED,
+                PARAM_KEY_HAS_WON,
+                PARAM_KEY_ENABLE_CHEAT,
+                PARAM_KEY_ENABLE_FLAG_MODE));
     }
 
     public static void dropTable(SQLiteDatabase db) {
-        db.execSQL(String.format("drop table if exists %s", MSGame.DB_TABLE_NAME));
+        db.execSQL(String.format("drop table if exists %s", DB_TABLE_NAME));
     }
 
     public static MSGameState createNewGame(MSDatabaseHelper dbHelper, int dimension, int mines) {
         ContentValues cv = new ContentValues();
-        if (MSGame.loadGame(dbHelper) == null) {
-            cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE); // since this app only supports 1 game at the moment, the id of game will be fixed
+        boolean bNoPreviousGame = loadGame(dbHelper) == null;
+        if (bNoPreviousGame) {
+            cv.put(PARAM_KEY_ID, DEFAULT_ID_VALUE); // since this app only supports 1 game at the moment, the id of game will be fixed
         }
-        cv.put(MSGame.PARAM_KEY_DIMENSION, dimension);
-        cv.put(MSGame.PARAM_KEY_MINES, mines);
-        cv.put(MSGame.PARAM_KEY_HAS_STARTED, 0);
-        cv.put(MSGame.PARAM_KEY_HAS_ENDED, 0);
-        cv.put(MSGame.PARAM_KEY_HAS_WON, 0);
-        cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, 0);
-        cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, 0);
-        if (MSGame.loadGame(dbHelper) == null) {
-            dbHelper.getWritableDatabase().insert(MSGame.DB_TABLE_NAME, MSGame.PARAM_KEY_ID, cv);
+        cv.put(PARAM_KEY_DIMENSION, dimension);
+        cv.put(PARAM_KEY_MINES, mines);
+        cv.put(PARAM_KEY_HAS_STARTED, 0);
+        cv.put(PARAM_KEY_HAS_ENDED, 0);
+        cv.put(PARAM_KEY_HAS_WON, 0);
+        cv.put(PARAM_KEY_ENABLE_CHEAT, 0);
+        cv.put(PARAM_KEY_ENABLE_FLAG_MODE, 0);
+        if (bNoPreviousGame) {
+            dbHelper.getWritableDatabase().insert(DB_TABLE_NAME, PARAM_KEY_ID, cv);
         } else {
-            dbHelper.getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
+            dbHelper.getWritableDatabase().update(DB_TABLE_NAME, cv, PARAM_KEY_ID + " = ?", new String[]{String.valueOf(DEFAULT_ID_VALUE)});
         }
         MSGame game = new MSGame(dimension, mines, false, false, false, false, false);
-
         List<MSTile> tiles = MSTile.generateTiles(dbHelper, dimension, mines);
-
         return new MSGameState(game, tiles);
     }
 
@@ -107,14 +106,14 @@ public class MSGame extends MSObject {
                                 ", %s" +
                                 ", %s" +
                                 " from %s",
-                        MSGame.PARAM_KEY_DIMENSION,
-                        MSGame.PARAM_KEY_MINES,
-                        MSGame.PARAM_KEY_HAS_STARTED,
-                        MSGame.PARAM_KEY_HAS_ENDED,
-                        MSGame.PARAM_KEY_HAS_WON,
-                        MSGame.PARAM_KEY_ENABLE_CHEAT,
-                        MSGame.PARAM_KEY_ENABLE_FLAG_MODE,
-                        MSGame.DB_TABLE_NAME), null);
+                        PARAM_KEY_DIMENSION,
+                        PARAM_KEY_MINES,
+                        PARAM_KEY_HAS_STARTED,
+                        PARAM_KEY_HAS_ENDED,
+                        PARAM_KEY_HAS_WON,
+                        PARAM_KEY_ENABLE_CHEAT,
+                        PARAM_KEY_ENABLE_FLAG_MODE,
+                        DB_TABLE_NAME), null);
         while (result.moveToNext()) {
             games.add(new MSGame(
                     result.getInt(0),
@@ -138,15 +137,15 @@ public class MSGame extends MSObject {
 
     public void saveChanges(MSDatabaseHelper dbHelper) {
         ContentValues cv = new ContentValues();
-        cv.put(MSGame.PARAM_KEY_ID, MSGame.DEFAULT_ID_VALUE);
-        cv.put(MSGame.PARAM_KEY_DIMENSION, getDimension());
-        cv.put(MSGame.PARAM_KEY_MINES, getMines());
-        cv.put(MSGame.PARAM_KEY_HAS_STARTED, getHasStarted() ? 1 : 0);
-        cv.put(MSGame.PARAM_KEY_HAS_ENDED, getHasEnded() ? 1 : 0);
-        cv.put(MSGame.PARAM_KEY_HAS_WON, getHasWon() ? 1 : 0);
-        cv.put(MSGame.PARAM_KEY_ENABLE_CHEAT, getEnableCheat() ? 1 : 0);
-        cv.put(MSGame.PARAM_KEY_ENABLE_FLAG_MODE, getEnableFlagMode() ? 1 : 0);
-        dbHelper.getWritableDatabase().update(MSGame.DB_TABLE_NAME, cv, MSGame.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(MSGame.DEFAULT_ID_VALUE)});
+        cv.put(PARAM_KEY_ID, DEFAULT_ID_VALUE);
+        cv.put(PARAM_KEY_DIMENSION, getDimension());
+        cv.put(PARAM_KEY_MINES, getMines());
+        cv.put(PARAM_KEY_HAS_STARTED, getHasStarted() ? 1 : 0);
+        cv.put(PARAM_KEY_HAS_ENDED, getHasEnded() ? 1 : 0);
+        cv.put(PARAM_KEY_HAS_WON, getHasWon() ? 1 : 0);
+        cv.put(PARAM_KEY_ENABLE_CHEAT, getEnableCheat() ? 1 : 0);
+        cv.put(PARAM_KEY_ENABLE_FLAG_MODE, getEnableFlagMode() ? 1 : 0);
+        dbHelper.getWritableDatabase().update(DB_TABLE_NAME, cv, PARAM_KEY_ID + " = ?", new String[]{String.valueOf(DEFAULT_ID_VALUE)});
     }
 
     public Integer getDimension() {
