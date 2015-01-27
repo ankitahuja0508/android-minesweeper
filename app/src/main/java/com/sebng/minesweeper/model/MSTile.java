@@ -48,62 +48,6 @@ public class MSTile extends MSObject {
         setAdjacentMines(adjacentMines);
     }
 
-    public Integer getId() {
-        return mId;
-    }
-
-    public void setId(Integer id) {
-        mId = id;
-    }
-
-    public Integer getRowIndex() {
-        return mRowIndex;
-    }
-
-    public void setRowIndex(Integer rowIndex) {
-        mRowIndex = rowIndex;
-    }
-
-    public Integer getColIndex() {
-        return mColIndex;
-    }
-
-    public void setColIndex(Integer colIndex) {
-        mColIndex = colIndex;
-    }
-
-    public Boolean getIsExplored() {
-        return mIsExplored;
-    }
-
-    public void setIsExplored(Boolean isExplored) {
-        mIsExplored = isExplored;
-    }
-
-    public Boolean getIsFlagged() {
-        return mIsFlagged;
-    }
-
-    public void setIsFlagged(Boolean isFlagged) {
-        mIsFlagged = isFlagged;
-    }
-
-    public Boolean getHasMine() {
-        return mHasMine;
-    }
-
-    public void setHasMine(Boolean hasMine) {
-        mHasMine = hasMine;
-    }
-
-    public Integer getAdjacentMines() {
-        return mAdjacentMines;
-    }
-
-    public void setAdjacentMines(Integer adjacentMines) {
-        mAdjacentMines = adjacentMines;
-    }
-
     public static void createTable(SQLiteDatabase db) {
         db.execSQL(String.format("create table %s (%s integer primary key autoincrement" +
                         ", %s real" +
@@ -125,32 +69,6 @@ public class MSTile extends MSObject {
 
     public static void dropTable(SQLiteDatabase db) {
         db.execSQL(String.format("drop table if exists %s", MSTile.DB_TABLE_NAME));
-    }
-
-    public static void insertOrUpdateTile(MSDatabaseHelper dbHelper, MSTile tile, boolean bUpdate) {
-        if (tile != null) {
-            ContentValues cv = new ContentValues();
-            cv.put(MSTile.PARAM_KEY_ID, tile.getId());
-            cv.put(MSTile.PARAM_KEY_ROW_INDEX, tile.getRowIndex());
-            cv.put(MSTile.PARAM_KEY_COL_INDEX, tile.getColIndex());
-            cv.put(MSTile.PARAM_KEY_IS_EXPLORED, tile.getIsExplored());
-            cv.put(MSTile.PARAM_KEY_IS_FLAGGED, tile.getIsFlagged());
-            cv.put(MSTile.PARAM_KEY_HAS_MINE, tile.getHasMine());
-            cv.put(MSTile.PARAM_KEY_ADJACENT_MINES, tile.getAdjacentMines());
-            if (bUpdate) {
-                dbHelper.getWritableDatabase().update(MSTile.DB_TABLE_NAME, cv, MSTile.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(tile.getId())});
-            } else {
-                dbHelper.getWritableDatabase().insert(MSTile.DB_TABLE_NAME, MSTile.PARAM_KEY_ID, cv);
-            }
-        }
-    }
-
-    public static void insertTile(MSDatabaseHelper dbHelper, MSTile tile) {
-        insertOrUpdateTile(dbHelper, tile, false);
-    }
-
-    public static void updateTile(MSDatabaseHelper dbHelper, MSTile tile) {
-        insertOrUpdateTile(dbHelper, tile, true);
     }
 
     public static List<MSTile> loadTiles(MSDatabaseHelper dbHelper) {
@@ -195,7 +113,7 @@ public class MSTile extends MSObject {
             for (int j = 0; j < dimension; j++, k++) {
                 MSTile tile = new MSTile(k, i, j, false, false, false, 0);
                 tiles.add(tile);
-                insertTile(dbHelper, tile);
+                tile.insert(dbHelper);
             }
         }
         return tiles;
@@ -252,7 +170,7 @@ public class MSTile extends MSObject {
                 tile.setAdjacentMines(adjacentMines);
             }
             k++;
-            updateTile(dbHelper, tile);
+            tile.saveChanges(dbHelper);
         }
         MSGame game = MSGame.loadGame(dbHelper);
         game.setHasStarted(true);
@@ -279,7 +197,7 @@ public class MSTile extends MSObject {
                                     if (adjacentTile.getAdjacentMines() == 0) {
                                         coordinatesOfAdditionalNewBlankTiles.add(new Pair<>(adjacentTile.getRowIndex(), adjacentTile.getColIndex()));
                                     }
-                                    updateTile(dbHelper, adjacentTile);
+                                    adjacentTile.saveChanges(dbHelper);
                                 }
                             }
                         }
@@ -301,7 +219,7 @@ public class MSTile extends MSObject {
                     MSTile tile = tiles.get(rowIndexMove * game.getDimension() + colIndexMove);
                     if (tile != null) {
                         tile.setIsExplored(true);
-                        updateTile(dbHelper, tile);
+                        tile.saveChanges(dbHelper);
                         if (tile.getHasMine()) {
                             game.setHasEnded(true);
                             game.setHasWon(false);
@@ -376,12 +294,92 @@ public class MSTile extends MSObject {
                     MSTile tile = tiles.get(rowIndexMove * game.getDimension() + colIndexMove);
                     if (tile != null && !tile.getIsExplored()) {
                         tile.setIsFlagged(bFlag);
-                        updateTile(dbHelper, tile);
+                        tile.saveChanges(dbHelper);
                     }
                 }
             }
         }
         return gameState;
+    }
+
+    public void insertOrUpdate(MSDatabaseHelper dbHelper, boolean bUpdate) {
+        ContentValues cv = new ContentValues();
+        cv.put(MSTile.PARAM_KEY_ID, getId());
+        cv.put(MSTile.PARAM_KEY_ROW_INDEX, getRowIndex());
+        cv.put(MSTile.PARAM_KEY_COL_INDEX, getColIndex());
+        cv.put(MSTile.PARAM_KEY_IS_EXPLORED, getIsExplored());
+        cv.put(MSTile.PARAM_KEY_IS_FLAGGED, getIsFlagged());
+        cv.put(MSTile.PARAM_KEY_HAS_MINE, getHasMine());
+        cv.put(MSTile.PARAM_KEY_ADJACENT_MINES, getAdjacentMines());
+        if (bUpdate) {
+            dbHelper.getWritableDatabase().update(MSTile.DB_TABLE_NAME, cv, MSTile.PARAM_KEY_ID + " = ?", new String[]{String.valueOf(getId())});
+        } else {
+            dbHelper.getWritableDatabase().insert(MSTile.DB_TABLE_NAME, MSTile.PARAM_KEY_ID, cv);
+        }
+    }
+
+    public void insert(MSDatabaseHelper dbHelper) {
+        insertOrUpdate(dbHelper, false);
+    }
+
+    public void saveChanges(MSDatabaseHelper dbHelper) {
+        insertOrUpdate(dbHelper, true);
+    }
+
+    public Integer getId() {
+        return mId;
+    }
+
+    public void setId(Integer id) {
+        mId = id;
+    }
+
+    public Integer getRowIndex() {
+        return mRowIndex;
+    }
+
+    public void setRowIndex(Integer rowIndex) {
+        mRowIndex = rowIndex;
+    }
+
+    public Integer getColIndex() {
+        return mColIndex;
+    }
+
+    public void setColIndex(Integer colIndex) {
+        mColIndex = colIndex;
+    }
+
+    public Boolean getIsExplored() {
+        return mIsExplored;
+    }
+
+    public void setIsExplored(Boolean isExplored) {
+        mIsExplored = isExplored;
+    }
+
+    public Boolean getIsFlagged() {
+        return mIsFlagged;
+    }
+
+    public void setIsFlagged(Boolean isFlagged) {
+        mIsFlagged = isFlagged;
+    }
+
+    public Boolean getHasMine() {
+        return mHasMine;
+    }
+
+    public void setHasMine(Boolean hasMine) {
+        mHasMine = hasMine;
+    }
+
+    public Integer getAdjacentMines() {
+        return mAdjacentMines;
+    }
+
+    public void setAdjacentMines(Integer adjacentMines) {
+        mAdjacentMines = adjacentMines;
     }
 
     @Override
