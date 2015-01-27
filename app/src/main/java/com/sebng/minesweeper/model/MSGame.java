@@ -129,12 +129,6 @@ public class MSGame extends MSObject {
         return games.isEmpty() ? null : games.get(0);
     }
 
-    public void validate(MSDatabaseHelper dbHelper) {
-        setHasEnded(true);
-        setHasWon(MSTile.getNumberOfUnexploredTiles(dbHelper) == getMines());
-        saveChanges(dbHelper);
-    }
-
     public void saveChanges(MSDatabaseHelper dbHelper) {
         ContentValues cv = new ContentValues();
         cv.put(PARAM_KEY_ID, DEFAULT_ID_VALUE);
@@ -146,6 +140,12 @@ public class MSGame extends MSObject {
         cv.put(PARAM_KEY_ENABLE_CHEAT, getEnableCheat() ? 1 : 0);
         cv.put(PARAM_KEY_ENABLE_FLAG_MODE, getEnableFlagMode() ? 1 : 0);
         dbHelper.getWritableDatabase().update(DB_TABLE_NAME, cv, PARAM_KEY_ID + " = ?", new String[]{String.valueOf(DEFAULT_ID_VALUE)});
+    }
+
+    public void validate(MSDatabaseHelper dbHelper) {
+        setHasEnded(true);
+        setHasWon(MSTile.getNumberOfUnexploredTiles(dbHelper) == getMines());
+        saveChanges(dbHelper);
     }
 
     public Integer getDimension() {

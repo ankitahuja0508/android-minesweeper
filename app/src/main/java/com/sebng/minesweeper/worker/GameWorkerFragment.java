@@ -88,18 +88,17 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGameState exploreTile(int rowIndex, int colIndex) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        MSGame game = MSGame.loadGame(databaseHelper);
-        if (!game.getHasStarted()) {
-            return MSTile.resetTiles(databaseHelper, game.getDimension(), game.getMines(), rowIndex, colIndex);
-        } else {
-            return MSTile.exploreTile(databaseHelper, new MSGameState(game, MSTile.loadTiles(databaseHelper)), rowIndex, colIndex);
-        }
+        MSGameState gameState = new MSGameState(MSGame.loadGame(databaseHelper), MSTile.loadTiles(databaseHelper));
+        gameState.exploreTile(databaseHelper, rowIndex, colIndex);
+        return gameState;
     }
 
     public MSGameState flagTile(int rowIndex, int colIndex, boolean bFlag) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         MSGame game = MSGame.loadGame(databaseHelper);
-        return MSTile.flagTile(databaseHelper, new MSGameState(game, MSTile.loadTiles(databaseHelper)), rowIndex, colIndex, bFlag);
+        MSGameState gameState = new MSGameState(game, MSTile.loadTiles(databaseHelper));
+        gameState.flagTile(databaseHelper, rowIndex, colIndex, bFlag);
+        return gameState;
     }
 
     public void exploreTileAsync(int rowIndex, int colIndex) {

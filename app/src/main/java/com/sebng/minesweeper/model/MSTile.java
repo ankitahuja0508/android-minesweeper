@@ -3,15 +3,12 @@ package com.sebng.minesweeper.model;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Pair;
 
 import com.sebng.minesweeper.helper.MSDatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Random;
 
 public class MSTile extends MSObject {
     public final static String DB_TABLE_NAME = "tiles";
@@ -119,123 +116,6 @@ public class MSTile extends MSObject {
         return tiles;
     }
 
-    public static MSGameState resetTiles(MSDatabaseHelper dbHelper, int dimension, int mines, int rowIndexFirstMove, int colIndexFirstMove) {
-        List<MSTile> tiles = loadTiles(dbHelper);
-
-        Hashtable<Integer, Boolean> indicesOfMineFreeTiles = new Hashtable<>();
-        for (int m = -1; m <= 1; m++) {
-            for (int n = -1; n <= 1; n++) {
-                int rowIndexMineFreeTile = rowIndexFirstMove + m;
-                int colIndexMineFreeTile = colIndexFirstMove + n;
-                if (rowIndexMineFreeTile >= 0 && rowIndexMineFreeTile < dimension && colIndexMineFreeTile >= 0 && colIndexMineFreeTile < dimension) {
-                    int indexMineFreeTile = rowIndexMineFreeTile * dimension + colIndexMineFreeTile;
-                    indicesOfMineFreeTiles.put(indexMineFreeTile, true);
-                }
-            }
-        }
-
-        Hashtable<Integer, Boolean> indicesOfMines = new Hashtable<>();
-        int totalTiles = dimension * dimension;
-        Random random = new Random();
-        do {
-            int randomIndex = random.nextInt(totalTiles);
-            if (!indicesOfMineFreeTiles.containsKey(randomIndex) && !indicesOfMines.containsKey(randomIndex)) {
-                indicesOfMines.put(randomIndex, true);
-            }
-        } while (indicesOfMines.size() < mines);
-
-        int i, j, k = 0;
-
-        for (MSTile tile : tiles) {
-            i = k / dimension;
-            j = k % dimension;
-            if (indicesOfMines.containsKey(k)) {
-                tile.setHasMine(true);
-            } else {
-                int adjacentMines = 0;
-                for (int m = -1; m <= 1; m++) {
-                    for (int n = -1; n <= 1; n++) {
-                        if (m != 0 || n != 0) {
-                            int rowIndexOfAdjacentTile = i + m;
-                            int colIndexOfAdjacentTile = j + n;
-                            if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
-                                int indexAdjacentTile = rowIndexOfAdjacentTile * dimension + colIndexOfAdjacentTile;
-                                if (indicesOfMines.containsKey(indexAdjacentTile)) {
-                                    adjacentMines++;
-                                }
-                            }
-                        }
-                    }
-                }
-                tile.setAdjacentMines(adjacentMines);
-            }
-            k++;
-            tile.saveChanges(dbHelper);
-        }
-        MSGame game = MSGame.loadGame(dbHelper);
-        game.setHasStarted(true);
-        game.saveChanges(dbHelper);
-        return exploreTile(dbHelper, new MSGameState(game, tiles), rowIndexFirstMove, colIndexFirstMove);
-    }
-
-    public static void revealBlankTiles(MSDatabaseHelper dbHelper, MSGameState gameState, List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles) {
-        if (coordinatesOfNewBlankTiles != null && !coordinatesOfNewBlankTiles.isEmpty()) {
-            List<Pair<Integer, Integer>> coordinatesOfAdditionalNewBlankTiles = new ArrayList<>();
-            int dimension = gameState.getGame().getDimension();
-            List<MSTile> tiles = gameState.getTiles();
-            for (Pair<Integer, Integer> coordinatesOfBlankTile : coordinatesOfNewBlankTiles) {
-                for (int m = -1; m <= 1; m++) {
-                    for (int n = -1; n <= 1; n++) {
-                        if (m != 0 || n != 0) {
-                            int rowIndexOfAdjacentTile = coordinatesOfBlankTile.first + m;
-                            int colIndexOfAdjacentTile = coordinatesOfBlankTile.second + n;
-                            if (rowIndexOfAdjacentTile >= 0 && rowIndexOfAdjacentTile < dimension && colIndexOfAdjacentTile >= 0 && colIndexOfAdjacentTile < dimension) {
-                                int indexAdjacentTile = rowIndexOfAdjacentTile * dimension + colIndexOfAdjacentTile;
-                                MSTile adjacentTile = tiles.get(indexAdjacentTile);
-                                if (!adjacentTile.getIsExplored() && !adjacentTile.getHasMine()) {
-                                    adjacentTile.setIsExplored(true);
-                                    if (adjacentTile.getAdjacentMines() == 0) {
-                                        coordinatesOfAdditionalNewBlankTiles.add(new Pair<>(adjacentTile.getRowIndex(), adjacentTile.getColIndex()));
-                                    }
-                                    adjacentTile.saveChanges(dbHelper);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (!coordinatesOfAdditionalNewBlankTiles.isEmpty()) {
-                revealBlankTiles(dbHelper, gameState, coordinatesOfAdditionalNewBlankTiles);
-            }
-        }
-    }
-
-    public static MSGameState exploreTile(MSDatabaseHelper dbHelper, MSGameState gameState, int rowIndexMove, int colIndexMove) {
-        if (gameState != null) {
-            MSGame game = gameState.getGame();
-            if (game != null && !game.getHasEnded()) {
-                List<MSTile> tiles = gameState.getTiles();
-                if (tiles != null && !tiles.isEmpty()) {
-                    MSTile tile = tiles.get(rowIndexMove * game.getDimension() + colIndexMove);
-                    if (tile != null) {
-                        tile.setIsExplored(true);
-                        tile.saveChanges(dbHelper);
-                        if (tile.getHasMine()) {
-                            game.setHasEnded(true);
-                            game.setHasWon(false);
-                            game.saveChanges(dbHelper);
-                        } else if (tile.getAdjacentMines() == 0) {
-                            List<Pair<Integer, Integer>> coordinatesOfNewBlankTiles = new ArrayList<>();
-                            coordinatesOfNewBlankTiles.add(new Pair<>(rowIndexMove, colIndexMove));
-                            revealBlankTiles(dbHelper, gameState, coordinatesOfNewBlankTiles);
-                        }
-                    }
-                }
-            }
-        }
-        return gameState;
-    }
-
     public static int getNumberOfUnexploredTiles(MSDatabaseHelper dbHelper) {
         int num = 0;
         Cursor result = dbHelper.getReadableDatabase()
@@ -283,23 +163,6 @@ public class MSTile extends MSObject {
         }
         result.close();
         return tiles;
-    }
-
-    public static MSGameState flagTile(MSDatabaseHelper dbHelper, MSGameState gameState, int rowIndexMove, int colIndexMove, boolean bFlag) {
-        if (gameState != null) {
-            MSGame game = gameState.getGame();
-            if (game != null && !game.getHasEnded() && game.getEnableFlagMode()) {
-                List<MSTile> tiles = gameState.getTiles();
-                if (tiles != null && !tiles.isEmpty()) {
-                    MSTile tile = tiles.get(rowIndexMove * game.getDimension() + colIndexMove);
-                    if (tile != null && !tile.getIsExplored()) {
-                        tile.setIsFlagged(bFlag);
-                        tile.saveChanges(dbHelper);
-                    }
-                }
-            }
-        }
-        return gameState;
     }
 
     public void insertOrUpdate(MSDatabaseHelper dbHelper, boolean bUpdate) {
