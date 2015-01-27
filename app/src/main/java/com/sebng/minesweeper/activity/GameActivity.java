@@ -94,8 +94,10 @@ public class GameActivity extends MSBaseActivity
         mWorkerFragment = (GameWorkerFragment) fm.findFragmentByTag(GameWorkerFragment.FRAGMENT_TAG);
         if (mWorkerFragment != null) {
             MSGame game = mWorkerFragment.getGame();
-            menu.getItem(INDEX_MENU_FLAG_MODE).setChecked(game.getEnableFlagMode());
-            menu.getItem(INDEX_MENU_CHEAT).setChecked(game.getEnableCheat());
+            if (game != null) {
+                menu.getItem(INDEX_MENU_FLAG_MODE).setChecked(game.getEnableFlagMode());
+                menu.getItem(INDEX_MENU_CHEAT).setChecked(game.getEnableCheat());
+            }
         }
         return outcome;
     }
