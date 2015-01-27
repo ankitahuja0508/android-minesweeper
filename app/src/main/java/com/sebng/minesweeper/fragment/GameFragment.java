@@ -208,7 +208,7 @@ public class GameFragment extends Fragment {
         if (workerFragment != null && !workerFragment.getIsCreatingNewGame()) {
             MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
             if (gameState == null) {
-                gameState = new MSGameState(databaseHelper.loadGame(), databaseHelper.loadTiles());
+                gameState = new MSGameState(MSGame.loadGame(databaseHelper), MSTile.loadTiles(databaseHelper));
             }
             MSGame game = gameState.getGame();
             if (game != null) {
@@ -256,7 +256,7 @@ public class GameFragment extends Fragment {
 
     public MSGame getGame() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        return databaseHelper.loadGame();
+        return MSGame.loadGame(databaseHelper);
     }
 
     public int getDimension() {

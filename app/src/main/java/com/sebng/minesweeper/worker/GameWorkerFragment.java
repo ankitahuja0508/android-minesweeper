@@ -71,8 +71,7 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGameState createNewGame(int dimension, int mines) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        databaseHelper.deleteAllTiles();
-        return databaseHelper.createNewGame(dimension, mines);
+        return MSGame.createNewGame(databaseHelper, dimension, mines);
     }
 
     public void createNewGameAsync(int dimension, int mines) {
@@ -89,18 +88,18 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGameState exploreTile(int rowIndex, int colIndex) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        MSGame game = databaseHelper.loadGame();
+        MSGame game = MSGame.loadGame(databaseHelper);
         if (!game.getHasStarted()) {
-            return databaseHelper.resetTiles(game.getDimension(), game.getMines(), rowIndex, colIndex);
+            return MSTile.resetTiles(databaseHelper, game.getDimension(), game.getMines(), rowIndex, colIndex);
         } else {
-            return databaseHelper.exploreTile(new MSGameState(game, databaseHelper.loadTiles()), rowIndex, colIndex);
+            return MSTile.exploreTile(databaseHelper, new MSGameState(game, MSTile.loadTiles(databaseHelper)), rowIndex, colIndex);
         }
     }
 
     public MSGameState flagTile(int rowIndex, int colIndex, boolean bFlag) {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        MSGame game = databaseHelper.loadGame();
-        return databaseHelper.flagTile(new MSGameState(game, databaseHelper.loadTiles()), rowIndex, colIndex, bFlag);
+        MSGame game = MSGame.loadGame(databaseHelper);
+        return MSTile.flagTile(databaseHelper, new MSGameState(game, MSTile.loadTiles(databaseHelper)), rowIndex, colIndex, bFlag);
     }
 
     public void exploreTileAsync(int rowIndex, int colIndex) {
@@ -130,13 +129,13 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGameState validateGame() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        MSGame game = databaseHelper.loadGame();
+        MSGame game = MSGame.loadGame(databaseHelper);
         if (game != null) {
-            MSGameState gameState = new MSGameState(game, databaseHelper.loadTiles());
+            MSGameState gameState = new MSGameState(game, MSTile.loadTiles(databaseHelper));
             if (game.getHasEnded()) {
                 return gameState;
             } else {
-                return databaseHelper.validateGame(gameState);
+                return MSGame.validateGame(databaseHelper, gameState);
             }
         } else {
             return null;
@@ -175,16 +174,16 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGameState provideHint() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        MSGame game = databaseHelper.loadGame();
+        MSGame game = MSGame.loadGame(databaseHelper);
         if (game != null) {
-            List<MSTile> unexploredMineFreeTiles = databaseHelper.loadUnexploredMineFreeTiles();
+            List<MSTile> unexploredMineFreeTiles = MSTile.loadUnexploredMineFreeTiles(databaseHelper);
             if (!unexploredMineFreeTiles.isEmpty()) {
                 Random random = new Random();
                 int indexMineFreeTile = random.nextInt(unexploredMineFreeTiles.size());
                 MSTile mineFreeTile = unexploredMineFreeTiles.get(indexMineFreeTile);
                 exploreTile(mineFreeTile.getRowIndex(), mineFreeTile.getColIndex());
             }
-            return new MSGameState(game, databaseHelper.loadTiles());
+            return new MSGameState(game, MSTile.loadTiles(databaseHelper));
         } else {
             return null;
         }
@@ -282,7 +281,7 @@ public class GameWorkerFragment extends Fragment {
 
     public MSGame getGame() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        return databaseHelper != null ? databaseHelper.loadGame() : null;
+        return databaseHelper != null ? MSGame.loadGame(databaseHelper) : null;
     }
 
     public int getDimension() {
@@ -292,7 +291,7 @@ public class GameWorkerFragment extends Fragment {
 
     public int getNumberOfUnexploredTiles() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        return databaseHelper.getNumberOfUnexploredTiles();
+        return MSTile.getNumberOfUnexploredTiles(databaseHelper);
     }
 
     public int getMines() {
@@ -477,9 +476,9 @@ public class GameWorkerFragment extends Fragment {
             if (params != null && params.length == 1) {
                 Boolean bEnable = (Boolean) params[0];
                 game.setEnableCheat(bEnable);
-                databaseHelper.updateGame(game);
+                MSGame.updateGame(databaseHelper, game);
             }
-            return new MSGameState(game, databaseHelper.loadTiles());
+            return new MSGameState(game, MSTile.loadTiles(databaseHelper));
         }
 
         @Override
@@ -508,7 +507,7 @@ public class GameWorkerFragment extends Fragment {
                 Boolean bEnable = (Boolean) params[0];
                 game.setEnableFlagMode(bEnable);
                 MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-                databaseHelper.updateGame(game);
+                MSGame.updateGame(databaseHelper, game);
             }
             return game;
         }

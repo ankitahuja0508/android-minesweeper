@@ -76,7 +76,7 @@ public class MainActivity extends MSBaseActivity
         Intent intent = new Intent(this, GameActivity.class);
         Bundle extras = new Bundle();
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(this);
-        MSGame game = databaseHelper.loadGame();
+        MSGame game = MSGame.loadGame(databaseHelper);
         if (game != null) {
             extras.putInt(GameActivity.EXTRA_DIMENSION, game.getDimension());
             extras.putInt(GameActivity.EXTRA_MINES, game.getMines());
@@ -93,7 +93,7 @@ public class MainActivity extends MSBaseActivity
 
     public void showGameSettings() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(this);
-        MSGame game = databaseHelper.loadGame();
+        MSGame game = MSGame.loadGame(databaseHelper);
         int dimension, mines;
         if (game != null) {
             dimension = game.getDimension();

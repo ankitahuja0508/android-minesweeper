@@ -98,7 +98,7 @@ public class MainFragment extends Fragment {
 
     public void updateViews() {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
-        MSGame game = databaseHelper.loadGame();
+        MSGame game = MSGame.loadGame(databaseHelper);
         mButtonContinue.setVisibility(game != null && !game.getHasEnded() ? View.VISIBLE : View.GONE);
     }
 
