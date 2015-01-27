@@ -37,5 +37,7 @@
     <string name="game__end_of_game_dialog___button_restart">Restart</string>
     <string name="game__end_of_game_dialog___button_new_game">New game</string>
     <string name="about_dialog___title">Developed by</string>
+    <string name="about_dialog___version_default"></string>
+    <string name="about_dialog___version_format" formatted="false">Version %s (Build %d)</string>
 
 </resources>
