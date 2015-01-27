@@ -131,12 +131,10 @@ public class GameWorkerFragment extends Fragment {
         MSDatabaseHelper databaseHelper = MSDatabaseHelper.getInstance(getActivity());
         MSGame game = MSGame.loadGame(databaseHelper);
         if (game != null) {
-            MSGameState gameState = new MSGameState(game, MSTile.loadTiles(databaseHelper));
-            if (game.getHasEnded()) {
-                return gameState;
-            } else {
-                return MSGame.validateGame(databaseHelper, gameState);
+            if (!game.getHasEnded()) {
+                game.validate(databaseHelper);
             }
+            return new MSGameState(game, MSTile.loadTiles(databaseHelper));
         } else {
             return null;
         }

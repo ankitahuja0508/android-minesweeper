@@ -130,14 +130,10 @@ public class MSGame extends MSObject {
         return games.isEmpty() ? null : games.get(0);
     }
 
-    public static MSGameState validateGame(MSDatabaseHelper dbHelper, MSGameState gameState) {
-        MSGame game = gameState.getGame();
-        if (game != null) {
-            game.setHasEnded(true);
-            game.setHasWon(MSTile.getNumberOfUnexploredTiles(dbHelper) == game.getMines());
-            game.saveChanges(dbHelper);
-        }
-        return gameState;
+    public void validate(MSDatabaseHelper dbHelper) {
+        setHasEnded(true);
+        setHasWon(MSTile.getNumberOfUnexploredTiles(dbHelper) == getMines());
+        saveChanges(dbHelper);
     }
 
     public void saveChanges(MSDatabaseHelper dbHelper) {
